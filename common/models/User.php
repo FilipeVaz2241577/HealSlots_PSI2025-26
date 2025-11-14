@@ -22,6 +22,8 @@ use yii\web\IdentityInterface;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
+ * @property string $password_repeat write-only password repeat
+ * @property string $role virtual property for form
  */
 class User extends ActiveRecord implements IdentityInterface
 {
@@ -29,6 +31,12 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
 
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
+
+    public $password;
+    public $password_repeat;
+    public $role; // Adicione esta propriedade
 
     /**
      * {@inheritdoc}
@@ -54,9 +62,82 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            ['status', 'default', 'value' => self::STATUS_INACTIVE],
+            ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+
+            // Campos obrigatórios
+            [['username', 'email'], 'required'],
+
+            // Validação de string
+            [['username', 'email', 'password'], 'string', 'max' => 255],
+            [['password'], 'string', 'min' => 6, 'on' => self::SCENARIO_CREATE],
+
+            // Validação de email
+            ['email', 'email'],
+
+            // Validação de unique
+            [['username'], 'unique'],
+            [['email'], 'unique'],
+
+            // Password obrigatório apenas no create
+            ['password', 'required', 'on' => self::SCENARIO_CREATE],
+
+            // Validação do password_repeat
+            ['password_repeat', 'required', 'on' => self::SCENARIO_CREATE],
+            ['password_repeat', 'compare', 'compareAttribute' => 'password', 'on' => self::SCENARIO_CREATE],
+
+            // Campo role para o formulário
+            ['role', 'safe'],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_CREATE] = ['username', 'email', 'password', 'password_repeat', 'status', 'role'];
+        $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'status', 'role'];
+        return $scenarios;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'username' => 'Nome de Utilizador',
+            'email' => 'Email',
+            'password' => 'Password',
+            'password_repeat' => 'Confirmar Password',
+            'role' => 'Role',
+            'status' => 'Estado',
+            'created_at' => 'Data de Criação',
+            'updated_at' => 'Data de Atualização',
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($this->isNewRecord) {
+                $this->generateAuthKey();
+            }
+
+            // Se foi fornecida uma nova password, gerar o hash
+            if (!empty($this->password)) {
+                $this->setPassword($this->password);
+            }
+
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -209,5 +290,35 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    /**
+     * Get status label
+     */
+    public function getStatusLabel()
+    {
+        $statuses = [
+            self::STATUS_ACTIVE => 'Ativo',
+            self::STATUS_INACTIVE => 'Inativo',
+            self::STATUS_DELETED => 'Eliminado',
+        ];
+
+        return $statuses[$this->status] ?? 'Desconhecido';
+    }
+
+    /**
+     * Get formatted created date
+     */
+    public function getCreatedDate()
+    {
+        return Yii::$app->formatter->asDatetime($this->created_at);
+    }
+
+    /**
+     * Get formatted updated date
+     */
+    public function getUpdatedDate()
+    {
+        return Yii::$app->formatter->asDatetime($this->updated_at);
     }
 }

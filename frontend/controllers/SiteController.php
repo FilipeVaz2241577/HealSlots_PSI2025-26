@@ -32,22 +32,12 @@ class SiteController extends Controller
                 'rules' => [
                     [
                         'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email'],
-                        'allow' => true,
+                        'allow' => true, // TODOS podem acessar (incluindo não logados)
                     ],
                     [
-                        'actions' => ['logout', 'index', 'contact', 'about'],
+                        'actions' => ['index', 'logout', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'salas', 'recursos', 'equipamentos', 'manutencoes'],
                         'allow' => true,
-                        'roles' => ['@'], // Qualquer utilizador autenticado
-                    ],
-                    [
-                        'actions' => ['dashboard-tecnico', 'marcacoes', 'salas', 'recursos'],
-                        'allow' => true,
-                        'roles' => ['frontOfficeAccess'], // Admin e TecnicoSaude
-                    ],
-                    [
-                        'actions' => ['dashboard-manutencao', 'equipamentos', 'manutencoes'],
-                        'allow' => true,
-                        'roles' => ['backOfficeAccess'], // Admin e AssistenteManutencao
+                        'roles' => ['@'], // Apenas usuários logados
                     ],
                 ],
             ],
@@ -83,17 +73,12 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
+        // Se o usuário não estiver logado, redireciona para login
         if (Yii::$app->user->isGuest) {
-            return $this->render('index'); // Página pública
+            return $this->redirect(['site/login']);
         }
 
-        // Redirecionar conforme o role do utilizador
-        if (Yii::$app->user->can('frontOfficeAccess')) {
-            return $this->redirect(['dashboard-tecnico']);
-        } elseif (Yii::$app->user->can('backOfficeAccess')) {
-            return $this->redirect(['dashboard-manutencao']);
-        }
-
+        // Se estiver logado, mostra a página index normal
         return $this->render('index');
     }
 
@@ -188,19 +173,15 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
+        // Definir layout sem navbar
+        $this->layout = 'login';
+
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            // Redirecionar conforme o role após login
-            if (Yii::$app->user->can('frontOfficeAccess')) {
-                return $this->redirect(['dashboard-tecnico']);
-            } elseif (Yii::$app->user->can('backOfficeAccess')) {
-                return $this->redirect(['dashboard-manutencao']);
-            }
-
             return $this->goBack();
         }
 
@@ -263,9 +244,11 @@ class SiteController extends Controller
      */
     public function actionSignup()
     {
+        // Definir layout sem navbar
+        $this->layout = 'login';
+
         $model = new SignupForm();
         if ($model->load(Yii::$app->request->post()) && $model->signup()) {
-            // Alterar a mensagem de sucesso
             Yii::$app->session->setFlash('success', 'Registo efetuado com sucesso. Já pode fazer login.');
             return $this->goHome();
         }

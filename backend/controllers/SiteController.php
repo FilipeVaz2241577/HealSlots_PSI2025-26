@@ -65,7 +65,7 @@ class SiteController extends Controller
         // Redirecionar conforme o role
         if (Yii::$app->user->can('manageUsers')) {
             // Admin - Dashboard completo
-            return $this->render('admin-index');
+            return $this->render('index.php');
         } elseif (Yii::$app->user->can('manageMaintenance')) {
             // AssistenteManutencao - Dashboard de manutenção
             return $this->render('manutencao-index');
