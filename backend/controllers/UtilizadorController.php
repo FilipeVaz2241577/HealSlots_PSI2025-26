@@ -144,10 +144,28 @@ class UtilizadorController extends Controller
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
-        $model->status = 0; // Soft delete
-        $model->save();
 
-        Yii::$app->session->setFlash('success', 'Utilizador eliminado com sucesso!');
+        // Verificar se é o próprio utilizador a tentar eliminar-se
+        if ($model->id === Yii::$app->user->id) {
+            Yii::$app->session->setFlash('error', 'Não pode eliminar a sua própria conta!');
+            return $this->redirect(['index']);
+        }
+
+        try {
+            // Remover roles primeiro (importante para constraints do RBAC)
+            $auth = Yii::$app->authManager;
+            $auth->revokeAll($id);
+
+            // Eliminar permanentemente da base de dados
+            if ($model->delete()) {
+                Yii::$app->session->setFlash('success', 'Utilizador eliminado permanentemente com sucesso!');
+            } else {
+                Yii::$app->session->setFlash('error', 'Erro ao eliminar o utilizador.');
+            }
+        } catch (\Exception $e) {
+            Yii::$app->session->setFlash('error', 'Erro ao eliminar utilizador: ' . $e->getMessage());
+        }
+
         return $this->redirect(['index']);
     }
 

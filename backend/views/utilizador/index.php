@@ -45,7 +45,6 @@ $this->title = 'Gestão de Utilizadores';
                 'filterModel' => $searchModel,
                 'tableOptions' => ['class' => 'table table-striped table-bordered table-hover'],
                 'columns' => [
-                    // REMOVIDA A LINHA: ['class' => 'yii\grid\SerialColumn'],
                     [
                         'attribute' => 'id',
                         'headerOptions' => ['style' => 'width: 80px;'],
@@ -73,7 +72,7 @@ $this->title = 'Gestão de Utilizadores';
                             return !empty($roleNames) ? implode(', ', $roleNames) : '<span class="text-muted">Sem role</span>';
                         },
                         'format' => 'raw',
-                        'filter' => $rolesList, // Lista de roles para filtro
+                        'filter' => $rolesList,
                         'headerOptions' => ['style' => 'width: 150px;'],
                     ],
                     [
@@ -125,11 +124,20 @@ $this->title = 'Gestão de Utilizadores';
                                 ]);
                             },
                             'delete' => function ($url, $model, $key) {
+                                // Verificar se é o próprio utilizador
+                                if ($model->id === Yii::$app->user->id) {
+                                    return Html::button('<i class="fa fa-trash"></i>', [
+                                        'class' => 'btn btn-sm btn-danger disabled',
+                                        'title' => 'Não pode eliminar a sua própria conta',
+                                        'disabled' => true,
+                                    ]);
+                                }
+
                                 return Html::a('<i class="fa fa-trash"></i>', $url, [
                                     'class' => 'btn btn-sm btn-danger',
-                                    'title' => 'Eliminar',
+                                    'title' => 'Eliminar permanentemente',
                                     'data' => [
-                                        'confirm' => 'Tem a certeza que deseja eliminar este utilizador?',
+                                        'confirm' => '⚠️ ELIMINAÇÃO PERMANENTE ⚠️\n\nTem a certeza que deseja eliminar PERMANENTEMENTE este utilizador?\n\nEsta ação NÃO pode ser desfeita!',
                                         'method' => 'post',
                                     ],
                                 ]);
@@ -201,4 +209,33 @@ $this->title = 'Gestão de Utilizadores';
     .badge {
         font-size: 0.75em;
     }
+    .btn-danger.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 </style>
+
+<script>
+    // Confirmação reforçada para eliminação permanente
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('a.btn-danger[data-confirm]');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const confirmationMessage = '🚨 ELIMINAÇÃO PERMANENTE 🚨\n\n' +
+                    'Tem a ABSOLUTA certeza que deseja eliminar PERMANENTEMENTE este utilizador?\n\n' +
+                    '▶️ Esta ação NÃO pode ser desfeita!\n' +
+                    '▶️ Todos os dados do utilizador serão PERDIDOS!\n' +
+                    '▶️ O utilizador não poderá voltar a aceder ao sistema!\n\n' +
+                    'Digite "ELIMINAR" para confirmar:';
+
+                const userInput = prompt(confirmationMessage);
+                if (userInput !== 'ELIMINAR') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('Eliminação cancelada.');
+                    return false;
+                }
+            });
+        });
+    });
+</script>

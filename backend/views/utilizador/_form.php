@@ -1,0 +1,116 @@
+<?php
+
+/** @var yii\web\View $this */
+/** @var common\models\User $model */
+/** @var yii\widgets\ActiveForm $form */
+
+use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\Html;
+
+?>
+
+<div class="user-form">
+    <?php $form = ActiveForm::begin([
+        'id' => 'user-form',
+        'options' => ['class' => 'form-horizontal'],
+        'fieldConfig' => [
+            'template' => "{label}\n{input}\n{error}",
+            'labelOptions' => ['class' => 'form-label'],
+            'inputOptions' => ['class' => 'form-control'],
+            'errorOptions' => ['class' => 'invalid-feedback'],
+        ],
+    ]); ?>
+
+    <div class="row">
+        <!-- TODO: Campo Nome de Utilizador -->
+        <div class="col-md-6">
+            <?= $form->field($model, 'username')->textInput([
+                'maxlength' => true,
+                'placeholder' => 'Digite o nome de utilizador'
+            ]) ?>
+        </div>
+
+        <!-- TODO: Campo Email -->
+        <div class="col-md-6">
+            <?= $form->field($model, 'email')->textInput([
+                'maxlength' => true,
+                'placeholder' => 'Digite o email',
+                'type' => 'email'
+            ]) ?>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- TODO: Campo Role -->
+        <div class="col-md-6">
+            <?= $form->field($model, 'role')->dropDownList([
+                'Admin' => 'Administrador',
+                'TecnicoSaude' => 'Técnico de Saúde',
+                'User' => 'Utilizador'
+            ], [
+                'prompt' => 'Selecione o perfil',
+                'class' => 'form-select'
+            ]) ?>
+        </div>
+
+        <!-- TODO: Campo Status (usando os valores corretos do Yii2) -->
+        <div class="col-md-6">
+            <?= $form->field($model, 'status')->dropDownList([
+                $model::STATUS_ACTIVE => 'Ativo',
+                $model::STATUS_INACTIVE => 'Inativo'
+            ], [
+                'class' => 'form-select'
+            ]) ?>
+        </div>
+    </div>
+
+    <!-- TODO: Campo Password (opcional para update) -->
+    <div class="row">
+        <div class="col-md-6">
+            <?= $form->field($model, 'password')->passwordInput([
+                'maxlength' => true,
+                'placeholder' => 'Deixe em branco para manter a password atual',
+                'value' => '' // Sempre vazio para não mostrar hash
+            ]) ?>
+            <small class="form-text text-muted">
+                Deixe em branco se não quiser alterar a password
+            </small>
+        </div>
+
+        <!-- TODO: Confirmação de Password -->
+        <div class="col-md-6">
+            <?= $form->field($model, 'password_repeat')->passwordInput([
+                'maxlength' => true,
+                'placeholder' => 'Confirme a nova password'
+            ]) ?>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- TODO: Botões de ação -->
+    <div class="form-group">
+        <div class="d-flex justify-content-between">
+            <?= Html::a('<i class="fa fa-times me-2"></i>Cancelar', ['index'], [
+                'class' => 'btn btn-secondary',
+            ]) ?>
+
+            <div>
+                <?= Html::a('<i class="fa fa-trash me-2"></i>Eliminar', ['delete', 'id' => $model->id], [
+                    'class' => 'btn btn-danger',
+                    'data' => [
+                        'confirm' => 'Tem a certeza que deseja eliminar este utilizador?',
+                        'method' => 'post',
+                    ],
+                ]) ?>
+
+                <?= Html::submitButton('<i class="fa fa-save me-2"></i>Guardar Alterações', [
+                    'class' => 'btn btn-primary',
+                    'name' => 'submit-button'
+                ]) ?>
+            </div>
+        </div>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+</div>

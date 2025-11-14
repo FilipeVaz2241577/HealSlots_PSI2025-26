@@ -85,7 +85,7 @@ $this->title = 'Login';
                             'autofocus' => true,
                             'placeholder' => 'name@example.com',
                             'id' => 'floatingInput'
-                        ])->label('Email address') ?>
+                        ])->label('Username') ?>
 
                         <?= $form->field($model, 'password', [
                             'template' => '{input}{label}{error}'
@@ -110,7 +110,6 @@ $this->title = 'Login';
 
                         <?php ActiveForm::end(); ?>
 
-                        <p class="text-center mb-0">Don't have an Account? <a href="">Sign Up</a></p>
                     </div>
                 </div>
             </div>

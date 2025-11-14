@@ -8,10 +8,11 @@ $params = array_merge(
 
 return [
     'id' => 'app-frontend',
-    'name' => 'HealSlots', // ADICIONE ESTA LINHA
+    'name' => 'HealSlots',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'frontend\controllers',
+    'defaultRoute' => 'site/index',
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-frontend',
@@ -20,6 +21,7 @@ return [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => true,
             'identityCookie' => ['name' => '_identity-frontend', 'httpOnly' => true],
+            'loginUrl' => ['site/login'],
         ],
         'session' => [
             // this is the name of the session cookie used for login on the frontend

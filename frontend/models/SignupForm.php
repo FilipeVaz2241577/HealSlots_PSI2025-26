@@ -53,35 +53,24 @@ class SignupForm extends Model
         $user->email = $this->email;
         $user->setPassword($this->password);
         $user->generateAuthKey();
-
-        // REMOVER: generateEmailVerificationToken()
-        // $user->generateEmailVerificationToken();
-
-        // ADICIONAR: Marcar como verificado automaticamente
         $user->status = User::STATUS_ACTIVE;
 
-        return $user->save(); // && $this->sendEmail($user); // Remover envio de email
-    }
+        // Salvar o usuário primeiro
+        if ($user->save()) {
+            // Atribuir a role "TecnicoSaude" usando RBAC
+            $auth = Yii::$app->authManager;
+            $tecnicoRole = $auth->getRole('TecnicoSaude');
 
-    /**
-     * Sends confirmation email to user
-     * @param User $user user model to with email should be send
-     * @return bool whether the email was sent
-     */
-    // COMENTAR ou REMOVER este mÃ©todo
-    /*
-    protected function sendEmail($user)
-    {
-        return Yii::$app
-            ->mailer
-            ->compose(
-                ['html' => 'emailVerify-html', 'text' => 'emailVerify-text'],
-                ['user' => $user]
-            )
-            ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name . ' robot'])
-            ->setTo($this->email)
-            ->setSubject('Account registration at ' . Yii::$app->name)
-            ->send();
+            if ($tecnicoRole) {
+                $auth->assign($tecnicoRole, $user->id);
+                Yii::info("Role TecnicoSaude atribuída ao usuário: " . $user->id, 'signup');
+            } else {
+                Yii::error("Role TecnicoSaude não encontrada no RBAC", 'signup');
+            }
+
+            return true;
+        }
+
+        return false;
     }
-    */
 }

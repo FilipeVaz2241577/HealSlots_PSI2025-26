@@ -11,6 +11,17 @@ use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 
 AppAsset::register($this);
+
+// TODO: Lógica para determinar item ativo no menu
+$currentController = Yii::$app->controller->id;
+$currentAction = Yii::$app->controller->action->id;
+$currentRoute = $currentController . '/' . $currentAction;
+
+// TODO: Definir quais rotas pertencem a cada item do menu
+$isDashboard = $currentRoute === 'site/index' || $currentController === 'site';
+$isUtilizadores = $currentController === 'utilizador';
+$isElements = in_array($currentController, ['element', 'button', 'typography']) ||
+    in_array($currentRoute, ['site/button', 'site/typography', 'site/element']);
 ?>
 <?php $this->beginPage() ?>
     <!DOCTYPE html>
@@ -76,21 +87,48 @@ AppAsset::register($this);
                     </div>
                 </div>
                 <div class="navbar-nav w-100">
-                    <a href="<?= Yii::$app->homeUrl ?>" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                    <!-- TODO: Menu Dashboard com classe ativa dinâmica -->
+                    <a href="<?= Yii::$app->homeUrl ?>" class="nav-item nav-link <?= $isDashboard ? 'active' : '' ?>">
+                        <i class="fa fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+
+                    <!-- TODO: Menu Elements com classe ativa dinâmica -->
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Elements</a>
+                        <a href="#" class="nav-link dropdown-toggle <?= $isElements ? 'active' : '' ?>" data-bs-toggle="dropdown">
+                            <i class="fa fa-laptop me-2"></i>Elements
+                        </a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="button.html" class="dropdown-item">Buttons</a>
                             <a href="typography.html" class="dropdown-item">Typography</a>
                             <a href="element.html" class="dropdown-item">Other Elements</a>
                         </div>
                     </div>
-                    <a href="<?= Yii::$app->urlManager->createUrl(['utilizador/index']) ?>" class="nav-item nav-link"><i class="fa fa-users me-2"></i>Utilizadores</a>
-                    <a href="form.html" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Forms</a>
-                    <a href="table.html" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Tables</a>
-                    <a href="chart.html" class="nav-item nav-link"><i class="fa fa-chart-bar me-2"></i>Charts</a>
+
+                    <!-- TODO: Menu Utilizadores com classe ativa dinâmica -->
+                    <a href="<?= Yii::$app->urlManager->createUrl(['utilizador/index']) ?>"
+                       class="nav-item nav-link <?= $isUtilizadores ? 'active' : '' ?>">
+                        <i class="fa fa-users me-2"></i>Utilizadores
+                    </a>
+
+                    <!-- TODO: Adicionar lógica ativa para Forms -->
+                    <a href="form.html" class="nav-item nav-link">
+                        <i class="fa fa-keyboard me-2"></i>Forms
+                    </a>
+
+                    <!-- TODO: Adicionar lógica ativa para Tables -->
+                    <a href="table.html" class="nav-item nav-link">
+                        <i class="fa fa-table me-2"></i>Tables
+                    </a>
+
+                    <!-- TODO: Adicionar lógica ativa para Charts -->
+                    <a href="chart.html" class="nav-item nav-link">
+                        <i class="fa fa-chart-bar me-2"></i>Charts
+                    </a>
+
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-file-alt me-2"></i>Pages</a>
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="far fa-file-alt me-2"></i>Pages
+                        </a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="signin.html" class="dropdown-item">Sign In</a>
                             <a href="signup.html" class="dropdown-item">Sign Up</a>
