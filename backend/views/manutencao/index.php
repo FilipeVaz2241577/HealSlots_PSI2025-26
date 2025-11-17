@@ -19,6 +19,100 @@ $this->title = 'Gestão de Manutenções';
     <div class="container-fluid pt-4 px-4">
         <div class="bg-light rounded p-4">
 
+            <!-- Seção de Alertas - Itens em Manutenção sem Registo -->
+            <?php if ($countEquipamentos > 0 || $countSalas > 0): ?>
+                <div class="alert alert-warning mb-4">
+                    <h5 class="alert-heading">
+                        <i class="fa fa-exclamation-triangle me-2"></i>Itens em Manutenção sem Registo Formal
+                    </h5>
+                    <p class="mb-3">Existem itens marcados como "Em Manutenção" mas sem um registo de manutenção ativa:</p>
+
+                    <div class="row">
+                        <?php if ($countEquipamentos > 0): ?>
+                            <div class="col-md-6">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <strong>Equipamentos (<?= $countEquipamentos ?>)</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                <tr>
+                                                    <th>Equipamento</th>
+                                                    <th>Nº Série</th>
+                                                    <th>Ações</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php foreach ($equipamentosSemManutencao as $equipamento): ?>
+                                                    <tr>
+                                                        <td><?= Html::encode($equipamento->equipamento) ?></td>
+                                                        <td><?= Html::encode($equipamento->numeroSerie) ?></td>
+                                                        <td>
+                                                            <?= Html::a('Criar Manutenção',
+                                                                ['create', 'equipamento_id' => $equipamento->id],
+                                                                ['class' => 'btn btn-sm btn-outline-primary']
+                                                            ) ?>
+                                                            <?= Html::a('Ver',
+                                                                ['/equipamento/view', 'id' => $equipamento->id],
+                                                                ['class' => 'btn btn-sm btn-outline-secondary', 'target' => '_blank']
+                                                            ) ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($countSalas > 0): ?>
+                            <div class="col-md-6">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <strong>Salas (<?= $countSalas ?>)</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                <tr>
+                                                    <th>Sala</th>
+                                                    <th>Bloco</th>
+                                                    <th>Ações</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php foreach ($salasSemManutencao as $sala): ?>
+                                                    <tr>
+                                                        <td><?= Html::encode($sala->nome) ?></td>
+                                                        <td><?= $sala->bloco ? Html::encode($sala->bloco->nome) : '-' ?></td>
+                                                        <td>
+                                                            <?= Html::a('Criar Manutenção',
+                                                                ['create', 'sala_id' => $sala->id],
+                                                                ['class' => 'btn btn-sm btn-outline-primary']
+                                                            ) ?>
+                                                            <?= Html::a('Ver',
+                                                                ['/sala/view', 'id' => $sala->id],
+                                                                ['class' => 'btn btn-sm btn-outline-secondary', 'target' => '_blank']
+                                                            ) ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Formulário de Pesquisa -->
             <div class="row mb-4">
                 <div class="col-md-8">
@@ -200,6 +294,12 @@ $this->title = 'Gestão de Manutenções';
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .alert-warning .card {
+        margin-bottom: 0;
+    }
+    .alert-warning .table {
+        margin-bottom: 0;
     }
 </style>
 

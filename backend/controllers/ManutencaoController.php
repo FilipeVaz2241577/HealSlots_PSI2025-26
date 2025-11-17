@@ -50,6 +50,12 @@ class ManutencaoController extends Controller
         $manutencoesCurso = Manutencao::find()->where(['status' => Manutencao::STATUS_EM_CURSO])->count();
         $manutencoesConcluidas = Manutencao::find()->where(['status' => Manutencao::STATUS_CONCLUIDA])->count();
 
+        // Itens em manutenção sem registo formal
+        $equipamentosSemManutencao = Equipamento::getEquipamentosManutencaoSemRegisto();
+        $salasSemManutencao = Sala::getSalasManutencaoSemRegisto();
+        $countEquipamentos = count($equipamentosSemManutencao);
+        $countSalas = count($salasSemManutencao);
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
@@ -57,6 +63,10 @@ class ManutencaoController extends Controller
             'manutencoesPendentes' => $manutencoesPendentes,
             'manutencoesCurso' => $manutencoesCurso,
             'manutencoesConcluidas' => $manutencoesConcluidas,
+            'equipamentosSemManutencao' => $equipamentosSemManutencao,
+            'salasSemManutencao' => $salasSemManutencao,
+            'countEquipamentos' => $countEquipamentos,
+            'countSalas' => $countSalas,
         ]);
     }
 
@@ -67,9 +77,17 @@ class ManutencaoController extends Controller
         ]);
     }
 
-    public function actionCreate()
+    public function actionCreate($equipamento_id = null, $sala_id = null)
     {
         $model = new Manutencao();
+
+        // Preenche automaticamente se vier de um dos botões
+        if ($equipamento_id) {
+            $model->equipamento_id = $equipamento_id;
+        }
+        if ($sala_id) {
+            $model->sala_id = $sala_id;
+        }
 
         // Obter listas para dropdowns
         $tecnicos = User::find()->joinWith('roles')->where(['auth_assignment.item_name' => 'AssistenteManutencao'])->all();

@@ -4,7 +4,6 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
-use yii\behaviors\BlameableBehavior;
 
 /**
  * This is the model class for table "equipamento".
@@ -36,10 +35,6 @@ class Equipamento extends ActiveRecord
     {
         return '{{%equipamento}}';
     }
-
-    /**
-     * {@inheritdoc}
-     */
 
     /**
      * {@inheritdoc}
@@ -150,5 +145,39 @@ class Equipamento extends ActiveRecord
             ->groupBy(['estado'])
             ->indexBy('estado')
             ->column();
+    }
+
+    /**
+     * Get equipamentos em manutenção sem registo de manutenção ativa
+     */
+    public static function getEquipamentosManutencaoSemRegisto()
+    {
+        return self::find()
+            ->where(['estado' => self::ESTADO_MANUTENCAO])
+            ->andWhere(['NOT IN', 'id',
+                (new \yii\db\Query())
+                    ->select(['equipamento_id'])
+                    ->from('manutencao')
+                    ->where(['status' => ['Pendente', 'Em Curso']])
+                    ->andWhere(['IS NOT', 'equipamento_id', null])
+            ])
+            ->all();
+    }
+
+    /**
+     * Get count de equipamentos em manutenção sem registo
+     */
+    public static function getCountEquipamentosManutencaoSemRegisto()
+    {
+        return self::find()
+            ->where(['estado' => self::ESTADO_MANUTENCAO])
+            ->andWhere(['NOT IN', 'id',
+                (new \yii\db\Query())
+                    ->select(['equipamento_id'])
+                    ->from('manutencao')
+                    ->where(['status' => ['Pendente', 'Em Curso']])
+                    ->andWhere(['IS NOT', 'equipamento_id', null])
+            ])
+            ->count();
     }
 }

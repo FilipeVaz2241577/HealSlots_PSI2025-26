@@ -165,4 +165,38 @@ class Sala extends \yii\db\ActiveRecord
             ->indexBy('estado')
             ->column();
     }
+
+    /**
+     * Get salas em manutenção sem registo de manutenção ativa
+     */
+    public static function getSalasManutencaoSemRegisto()
+    {
+        return self::find()
+            ->where(['estado' => self::ESTADO_MANUTENCAO])
+            ->andWhere(['NOT IN', 'id',
+                (new \yii\db\Query())
+                    ->select(['sala_id'])
+                    ->from('manutencao')
+                    ->where(['status' => ['Pendente', 'Em Curso']])
+                    ->andWhere(['IS NOT', 'sala_id', null])
+            ])
+            ->all();
+    }
+
+    /**
+     * Get count de salas em manutenção sem registo
+     */
+    public static function getCountSalasManutencaoSemRegisto()
+    {
+        return self::find()
+            ->where(['estado' => self::ESTADO_MANUTENCAO])
+            ->andWhere(['NOT IN', 'id',
+                (new \yii\db\Query())
+                    ->select(['sala_id'])
+                    ->from('manutencao')
+                    ->where(['status' => ['Pendente', 'Em Curso']])
+                    ->andWhere(['IS NOT', 'sala_id', null])
+            ])
+            ->count();
+    }
 }
