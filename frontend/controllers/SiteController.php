@@ -31,7 +31,7 @@ class SiteController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email'],
+                        'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email', 'suporte'],
                         'allow' => true, // TODOS podem acessar (incluindo não logados)
                     ],
                     [
@@ -80,6 +80,32 @@ class SiteController extends Controller
 
         // Se estiver logado, mostra a página index normal
         return $this->render('index');
+    }
+
+    /**
+     * Displays suporte page.
+     *
+     * @return mixed
+     */
+    public function actionSuporte()
+    {
+        $model = new ContactForm();
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            // Tentar enviar para email de suporte, senão para admin
+            $supportEmail = Yii::$app->params['supportEmail'] ?? Yii::$app->params['adminEmail'];
+
+            if ($model->sendEmail($supportEmail)) {
+                Yii::$app->session->setFlash('success', 'Obrigado por contactar-nos. Responderemos assim que possível.');
+            } else {
+                Yii::$app->session->setFlash('error', 'Ocorreu um erro ao enviar a sua mensagem. Por favor tente novamente.');
+            }
+            return $this->refresh();
+        }
+
+        return $this->render('suporte', [
+            'model' => $model,
+        ]);
     }
 
     /**
@@ -142,21 +168,16 @@ class SiteController extends Controller
         return $this->render('recursos');
     }
 
-    /**
-     * Gestão de Equipamentos (AssistenteManutencao e Admin)
-     */
-    public function actionEquipamentos()
+
+    public function actionEquipamentos() // Note o "E" maiúsculo
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para gerir equipamentos.');
         }
 
-        return $this->render('equipamentos');
+        return $this->render('equipamentos'); // Note o "e" minúsculo
     }
 
-    /**
-     * Gestão de Manutenções (AssistenteManutencao e Admin)
-     */
     public function actionManutencoes()
     {
         if (!Yii::$app->user->can('manageMaintenance')) {
