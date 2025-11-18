@@ -11,6 +11,18 @@ use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 
 AppAsset::register($this);
+
+$this->registerCss("
+    .navbar-nav .nav-link {
+        font-size: 1.15rem;
+        font-weight: 500;
+    }
+    
+    .dropdown-menu .dropdown-item {
+        font-size: 1.05rem;
+    }
+");
+
 ?>
 <?php $this->beginPage() ?>
     <!DOCTYPE html>
@@ -37,9 +49,9 @@ AppAsset::register($this);
     <!-- Navbar Start -->
     <div class="container-fluid sticky-top bg-white shadow-sm">
         <div class="container">
-            <nav class="navbar navbar-expand-lg bg-white navbar-light py-3 py-lg-0">
+            <nav class="navbar navbar-expand-lg bg-white navbar-light py-3 py-lg-1">
                 <a href="<?= Yii::$app->homeUrl ?>" class="navbar-brand d-flex align-items-center">
-                    <img src="/img/icon_semtexto.png" alt="HealSlots" style="height: 40px;" class="me-2">
+                    <img src="<?= Yii::getAlias('@web/img/icon_semtexto.png') ?>" alt="HealSlots" style="height: 80px;" class="me-3">
                     <h1 class="m-0 text-uppercase text-primary"><?= Html::encode(Yii::$app->name) ?></h1>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -47,9 +59,10 @@ AppAsset::register($this);
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0">
-                        <a href="<?= Yii::$app->homeUrl ?>" class="nav-item nav-link active">Home</a>
-                        <a href="<?= \yii\helpers\Url::to(['/site/about']) ?>" class="nav-item nav-link">About</a>
-                        <a href="<?= \yii\helpers\Url::to(['/site/contact']) ?>" class="nav-item nav-link">Contact</a>
+                        <a href="<?= Yii::$app->homeUrl ?>" class="nav-item nav-link <?= $this->title == 'Home' ? 'active' : '' ?>">Home</a>
+                        <a href="<?= \yii\helpers\Url::to(['/site/tiposequipamento']) ?>" class="nav-item nav-link <?= $this->title == 'Equipamentos' ? 'active' : '' ?>">Equipamentos</a>
+                        <a href="<?= \yii\helpers\Url::to(['/site/blocos']) ?>" class="nav-item nav-link <?= $this->title == 'Blocos' ? 'active' : '' ?>">Blocos/Salas</a>
+                        <a href="<?= \yii\helpers\Url::to(['/site/suporte']) ?>" class="nav-item nav-link <?= $this->title == 'Suporte' ? 'active' : '' ?>">Suporte</a>
 
                         <?php if (Yii::$app->user->isGuest): ?>
                             <a href="<?= \yii\helpers\Url::to(['/site/login']) ?>" class="nav-item nav-link">
@@ -61,8 +74,6 @@ AppAsset::register($this);
                                     <i class="fa fa-user me-1"></i><?= Yii::$app->user->identity->username ?>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                                    <a href="#" class="dropdown-item">My Profile</a>
-                                    <a href="#" class="dropdown-item">Settings</a>
                                     <?= Html::beginForm(['/site/logout'], 'post', ['class' => 'd-inline'])
                                     . Html::submitButton(
                                             'Log Out',
@@ -80,7 +91,7 @@ AppAsset::register($this);
     <!-- Navbar End -->
 
     <main role="main" class="flex-shrink-0">
-        <div class="container">
+        <div class="container-fluid">
             <?= Breadcrumbs::widget([
                     'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
             ]) ?>
@@ -89,7 +100,7 @@ AppAsset::register($this);
         </div>
     </main>
 
-    <footer class="footer mt-auto py-3 text-muted">
+    <footer class="footer mt-auto py-3 text-muted bg-light">
         <div class="container">
             <p class="float-start">&copy; <?= Html::encode(Yii::$app->name) ?> <?= date('Y') ?></p>
             <p class="float-end"><?= Yii::powered() ?></p>
