@@ -35,9 +35,9 @@ class SiteController extends Controller
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['index', 'logout', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento'],
+                        'actions' => ['logout', 'index', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['frontOfficeAccess'], // Apenas TecnicoSaude e Admin
                     ],
                 ],
             ],
@@ -92,7 +92,6 @@ class SiteController extends Controller
         $model = new ContactForm();
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            // Tentar enviar para email de suporte, senão para admin
             $supportEmail = Yii::$app->params['supportEmail'] ?? Yii::$app->params['adminEmail'];
 
             if ($model->sendEmail($supportEmail)) {
@@ -114,7 +113,7 @@ class SiteController extends Controller
     public function actionDashboardTecnico()
     {
         if (!Yii::$app->user->can('frontOfficeAccess')) {
-            throw new \yii\web\ForbiddenHttpException('Acesso negado.');
+            throw new \yii\web\ForbiddenHttpException('Acesso negado. Apenas técnicos de saúde e administradores podem aceder.');
         }
 
         return $this->render('dashboard-tecnico');
@@ -126,7 +125,7 @@ class SiteController extends Controller
     public function actionDashboardManutencao()
     {
         if (!Yii::$app->user->can('backOfficeAccess')) {
-            throw new \yii\web\ForbiddenHttpException('Acesso negado.');
+            throw new \yii\web\ForbiddenHttpException('Acesso negado. Apenas assistentes de manutenção e administradores podem aceder.');
         }
 
         return $this->render('dashboard-manutencao');
@@ -245,22 +244,29 @@ class SiteController extends Controller
     }
 
     /**
-     * Logs in a user.
+     * Login action.
      *
-     * @return mixed
+     * @return string|Response
      */
     public function actionLogin()
     {
-        // Definir layout sem navbar
-        $this->layout = 'login';
-
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
 
+        $this->layout = 'login';
+
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            // Verificar se o user tem acesso ao frontend
+            if (Yii::$app->user->can('frontOfficeAccess')) {
+                return $this->goBack();
+            } else {
+                // Se não tiver acesso ao frontend (AssistenteManutencao), redirecionar para backend
+                Yii::$app->user->logout();
+                Yii::$app->session->setFlash('error', 'Não tem acesso ao frontend. Utilize o backend para aceder às suas funcionalidades.');
+                return $this->refresh();
+            }
         }
 
         $model->password = '';
@@ -271,9 +277,9 @@ class SiteController extends Controller
     }
 
     /**
-     * Logs out the current user.
+     * Logout action.
      *
-     * @return mixed
+     * @return Response
      */
     public function actionLogout()
     {

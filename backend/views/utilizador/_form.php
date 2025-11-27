@@ -46,7 +46,7 @@ use yii\bootstrap5\Html;
             <?= $form->field($model, 'role')->dropDownList([
                 'Admin' => 'Administrador',
                 'TecnicoSaude' => 'Técnico de Saúde',
-                'User' => 'Utilizador'
+                'AssistenteManutencao' => 'Assistente de Manutencao'
             ], [
                 'prompt' => 'Selecione o perfil',
                 'class' => 'form-select'
