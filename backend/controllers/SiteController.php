@@ -68,7 +68,7 @@ class SiteController extends Controller
             return $this->render('index.php');
         } elseif (Yii::$app->user->can('manageMaintenance')) {
             // AssistenteManutencao - Dashboard de manutenção
-            return $this->render('manutencao-index');
+            return $this->render('index.php');
         }
 
         return $this->render('index');
