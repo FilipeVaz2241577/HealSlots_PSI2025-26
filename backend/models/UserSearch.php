@@ -5,12 +5,17 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\User;
-use yii\db\Query;
 
+/**
+ * UserSearch represents the model behind the search form of `common\models\User`.
+ */
 class UserSearch extends User
 {
     public $role;
 
+    /**
+     * {@inheritdoc}
+     */
     public function rules()
     {
         return [
@@ -19,13 +24,24 @@ class UserSearch extends User
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function scenarios()
     {
         return Model::scenarios();
     }
 
+    /**
+     * Creates data provider instance with search query applied
+     *
+     * @param array $params
+     *
+     * @return ActiveDataProvider
+     */
     public function search($params)
     {
+        // Buscar TODOS os utilizadores (ativos e inativos)
         $query = User::find();
 
         $dataProvider = new ActiveDataProvider([
@@ -34,7 +50,7 @@ class UserSearch extends User
                 'pageSize' => 10,
             ],
             'sort' => [
-                'defaultOrder' => ['id' => SORT_DESC],
+                'defaultOrder' => ['status' => SORT_DESC, 'id' => SORT_DESC],
             ],
         ]);
 
@@ -55,7 +71,7 @@ class UserSearch extends User
 
         // Filtro por role
         if (!empty($this->role)) {
-            $userIds = (new Query())
+            $userIds = (new \yii\db\Query())
                 ->select('user_id')
                 ->from('{{%auth_assignment}}')
                 ->where(['item_name' => $this->role])
@@ -64,7 +80,6 @@ class UserSearch extends User
             if (!empty($userIds)) {
                 $query->andWhere(['id' => $userIds]);
             } else {
-                // Se não encontrar users com essa role, retorna vazio
                 $query->andWhere('1=0');
             }
         }

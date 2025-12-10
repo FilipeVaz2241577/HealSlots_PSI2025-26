@@ -2,6 +2,7 @@
 
 /** @var yii\web\View $this */
 /** @var common\models\Sala $model */
+/** @var array $blocos */
 
 $this->title = 'Editar Sala: ' . $model->nome;
 $this->params['breadcrumbs'][] = ['label' => 'Salas', 'url' => ['index']];

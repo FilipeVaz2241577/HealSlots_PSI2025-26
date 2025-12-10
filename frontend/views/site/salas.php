@@ -34,7 +34,7 @@ $this->title = 'Salas - Bloco A';
                                     <span class="text-success"><strong>Disponível</strong></span>
                                 </p>
                                 <div class="text-start">
-                                    <?= Html::a('Ver Detalhes', ['#'], ['class' => 'btn btn-outline-primary btn-sm']) ?>
+                                    <?= Html::a('Ver Detalhes', ['site/detalhe-sala', 'sala' => 'A101'], ['class' => 'btn btn-outline-primary btn-sm']) ?>
                                 </div>
                             </div>
                         </div>

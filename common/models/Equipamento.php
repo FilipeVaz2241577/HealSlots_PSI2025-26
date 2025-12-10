@@ -4,6 +4,8 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\behaviors\BlameableBehavior;
 
 /**
  * This is the model class for table "equipamento".
@@ -13,14 +15,10 @@ use yii\db\ActiveRecord;
  * @property int $tipoEquipamento_id
  * @property string $equipamento
  * @property string $estado
- * @property int $created_by
- * @property int $updated_by
  *
  * @property TipoEquipamento $tipoEquipamento
  * @property SalaEquipamento[] $salaEquipamentos
  * @property Sala[] $salas
- * @property User $createdBy
- * @property User $updatedBy
  */
 class Equipamento extends ActiveRecord
 {
@@ -34,6 +32,15 @@ class Equipamento extends ActiveRecord
     public static function tableName()
     {
         return '{{%equipamento}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+        ];
     }
 
     /**
@@ -63,8 +70,6 @@ class Equipamento extends ActiveRecord
             'tipoEquipamento_id' => 'Tipo de Equipamento',
             'equipamento' => 'Nome do Equipamento',
             'estado' => 'Estado',
-            'created_by' => 'Criado Por',
-            'updated_by' => 'Atualizado Por'
         ];
     }
 
@@ -93,21 +98,6 @@ class Equipamento extends ActiveRecord
             ->via('salaEquipamentos');
     }
 
-    /**
-     * Gets query for [[CreatedBy]].
-     */
-    public function getCreatedBy()
-    {
-        return $this->hasOne(User::class, ['id' => 'created_by']);
-    }
-
-    /**
-     * Gets query for [[UpdatedBy]].
-     */
-    public function getUpdatedBy()
-    {
-        return $this->hasOne(User::class, ['id' => 'updated_by']);
-    }
 
     /**
      * Get estado options
@@ -178,6 +168,66 @@ class Equipamento extends ActiveRecord
                     ->where(['status' => ['Pendente', 'Em Curso']])
                     ->andWhere(['IS NOT', 'equipamento_id', null])
             ])
+            ->count();
+    }
+
+    /**
+     * Get current sala for this equipamento
+     */
+    public function getCurrentSala()
+    {
+        $salaEquipamento = SalaEquipamento::find()
+            ->where(['idEquipamento' => $this->id])
+            ->one();
+
+        if ($salaEquipamento) {
+            return $salaEquipamento->sala;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if equipamento is in maintenance
+     */
+    public function isInMaintenance()
+    {
+        return $this->estado === self::ESTADO_MANUTENCAO;
+    }
+
+    /**
+     * Check if equipamento is operational
+     */
+    public function isOperational()
+    {
+        return $this->estado === self::ESTADO_OPERACIONAL;
+    }
+
+    /**
+     * Check if equipamento is in use
+     */
+    public function isInUse()
+    {
+        return $this->estado === self::ESTADO_EM_USO;
+    }
+
+    /**
+     * Check if equipamento has a sala assigned
+     */
+    public function hasSala()
+    {
+        return SalaEquipamento::find()
+            ->where(['idEquipamento' => $this->id])
+            ->exists();
+    }
+
+    /**
+     * Get salas count for this equipamento
+     */
+    public function getSalasCount()
+    {
+        return SalaEquipamento::find()
+            ->where(['idEquipamento' => $this->id])
             ->count();
     }
 }

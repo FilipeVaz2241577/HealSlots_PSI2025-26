@@ -15,6 +15,7 @@ use yii\helpers\ArrayHelper;
 use common\models\User;
 use common\models\Equipamento;
 use common\models\Sala;
+use common\models\SalaEquipamento;
 
 class ManutencaoController extends Controller
 {
@@ -37,6 +38,19 @@ class ManutencaoController extends Controller
                 ],
             ],
         ];
+    }
+
+    /**
+     * Método auxiliar para obter técnicos
+     */
+    private function getTecnicos()
+    {
+        $auth = Yii::$app->authManager;
+        $userIds = $auth->getUserIdsByRole('AssistenteManutencao');
+
+        return User::find()
+            ->where(['id' => $userIds, 'status' => User::STATUS_ACTIVE])
+            ->all();
     }
 
     public function actionIndex()
@@ -77,24 +91,39 @@ class ManutencaoController extends Controller
         ]);
     }
 
-    public function actionCreate($equipamento_id = null, $sala_id = null)
+    public function actionCreate($equipamento_id = null)
     {
         $model = new Manutencao();
 
         // Preenche automaticamente se vier de um dos botões
         if ($equipamento_id) {
-            $model->equipamento_id = $equipamento_id;
-        }
-        if ($sala_id) {
-            $model->sala_id = $sala_id;
+            $equipamento = Equipamento::findOne($equipamento_id);
+            if ($equipamento) {
+                $model->equipamento_id = $equipamento_id;
+
+                // Busca a sala onde o equipamento está atualmente (se existir)
+                $salaEquipamento = SalaEquipamento::find()
+                    ->where(['idEquipamento' => $equipamento_id])
+                    ->one();
+
+                if ($salaEquipamento) {
+                    $model->sala_id = $salaEquipamento->idSala;
+                }
+
+                // Preenche a data de início com a data/hora atual
+                $model->dataInicio = date('Y-m-d H:i:s');
+
+                // Define status como Pendente
+                $model->status = Manutencao::STATUS_PENDENTE;
+            }
         }
 
         // Obter listas para dropdowns
-        $tecnicos = User::find()->joinWith('roles')->where(['auth_assignment.item_name' => 'AssistenteManutencao'])->all();
+        $tecnicos = $this->getTecnicos();
         $tecnicosList = ArrayHelper::map($tecnicos, 'id', 'username');
 
         $equipamentos = Equipamento::find()->all();
-        $equipamentosList = ArrayHelper::map($equipamentos, 'id', 'nome');
+        $equipamentosList = ArrayHelper::map($equipamentos, 'id', 'equipamento');
 
         $salas = Sala::find()->all();
         $salasList = ArrayHelper::map($salas, 'id', 'nome');
@@ -106,6 +135,25 @@ class ManutencaoController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Manutenção criada com sucesso!');
+
+            // Atualiza o estado do equipamento para "Em Manutenção"
+            if ($model->equipamento_id) {
+                $equipamento = Equipamento::findOne($model->equipamento_id);
+                if ($equipamento) {
+                    $equipamento->estado = Equipamento::ESTADO_MANUTENCAO;
+                    $equipamento->save(false);
+                }
+            }
+
+            // Atualiza o estado da sala para "Manutencao" se a sala foi especificada
+            if ($model->sala_id) {
+                $sala = Sala::findOne($model->sala_id);
+                if ($sala) {
+                    $sala->estado = Sala::ESTADO_MANUTENCAO;
+                    $sala->save(false);
+                }
+            }
+
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -114,6 +162,7 @@ class ManutencaoController extends Controller
             'tecnicosList' => $tecnicosList,
             'equipamentosList' => $equipamentosList,
             'salasList' => $salasList,
+            'equipamento_id' => $equipamento_id,
         ]);
     }
 
@@ -122,14 +171,19 @@ class ManutencaoController extends Controller
         $model = $this->findModel($id);
 
         // Obter listas para dropdowns
-        $tecnicos = User::find()->joinWith('roles')->where(['auth_assignment.item_name' => 'AssistenteManutencao'])->all();
+        $tecnicos = $this->getTecnicos();
         $tecnicosList = ArrayHelper::map($tecnicos, 'id', 'username');
 
         $equipamentos = Equipamento::find()->all();
-        $equipamentosList = ArrayHelper::map($equipamentos, 'id', 'nome');
+        $equipamentosList = ArrayHelper::map($equipamentos, 'id', 'equipamento');
 
         $salas = Sala::find()->all();
         $salasList = ArrayHelper::map($salas, 'id', 'nome');
+
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ActiveForm::validate($model);
+        }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Manutenção atualizada com sucesso!');
@@ -141,6 +195,7 @@ class ManutencaoController extends Controller
             'tecnicosList' => $tecnicosList,
             'equipamentosList' => $equipamentosList,
             'salasList' => $salasList,
+            'equipamento_id' => null, // Adiciona esta linha
         ]);
     }
 
@@ -149,6 +204,42 @@ class ManutencaoController extends Controller
         $model = $this->findModel($id);
 
         try {
+            // Antes de eliminar, verifica se precisa reverter o estado do equipamento
+            if ($model->equipamento_id) {
+                $equipamento = Equipamento::findOne($model->equipamento_id);
+                if ($equipamento && $equipamento->estado === Equipamento::ESTADO_MANUTENCAO) {
+                    // Verifica se não há outras manutenções ativas para este equipamento
+                    $outrasManutencoes = Manutencao::find()
+                        ->where(['equipamento_id' => $model->equipamento_id])
+                        ->andWhere(['!=', 'id', $model->id])
+                        ->andWhere(['status' => [Manutencao::STATUS_PENDENTE, Manutencao::STATUS_EM_CURSO]])
+                        ->exists();
+
+                    if (!$outrasManutencoes) {
+                        $equipamento->estado = Equipamento::ESTADO_OPERACIONAL;
+                        $equipamento->save(false);
+                    }
+                }
+            }
+
+            // Antes de eliminar, verifica se precisa reverter o estado da sala
+            if ($model->sala_id) {
+                $sala = Sala::findOne($model->sala_id);
+                if ($sala && $sala->estado === Sala::ESTADO_MANUTENCAO) {
+                    // Verifica se não há outras manutenções ativas para esta sala
+                    $outrasManutencoes = Manutencao::find()
+                        ->where(['sala_id' => $model->sala_id])
+                        ->andWhere(['!=', 'id', $model->id])
+                        ->andWhere(['status' => [Manutencao::STATUS_PENDENTE, Manutencao::STATUS_EM_CURSO]])
+                        ->exists();
+
+                    if (!$outrasManutencoes) {
+                        $sala->estado = Sala::ESTADO_LIVRE;
+                        $sala->save(false);
+                    }
+                }
+            }
+
             if ($model->delete()) {
                 Yii::$app->session->setFlash('success', 'Manutenção eliminada permanentemente com sucesso!');
             } else {
@@ -159,6 +250,153 @@ class ManutencaoController extends Controller
         }
 
         return $this->redirect(['index']);
+    }
+
+    /**
+     * Action para iniciar manutenção
+     */
+    public function actionIniciar($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->status === Manutencao::STATUS_PENDENTE) {
+            $model->status = Manutencao::STATUS_EM_CURSO;
+            $model->dataInicio = date('Y-m-d H:i:s');
+
+            if ($model->save()) {
+                Yii::$app->session->setFlash('success', 'Manutenção iniciada com sucesso!');
+            } else {
+                Yii::$app->session->setFlash('error', 'Erro ao iniciar manutenção.');
+            }
+        } else {
+            Yii::$app->session->setFlash('warning', 'Esta manutenção já está em curso ou concluída.');
+        }
+
+        return $this->redirect(['view', 'id' => $model->id]);
+    }
+
+    /**
+     * Action para concluir manutenção
+     */
+    public function actionConcluir($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->status === Manutencao::STATUS_EM_CURSO) {
+            $model->status = Manutencao::STATUS_CONCLUIDA;
+            $model->dataFim = date('Y-m-d H:i:s');
+
+            if ($model->save()) {
+                // Atualiza o estado do equipamento para "Operacional"
+                if ($model->equipamento_id) {
+                    $equipamento = Equipamento::findOne($model->equipamento_id);
+                    if ($equipamento) {
+                        $equipamento->estado = Equipamento::ESTADO_OPERACIONAL;
+                        $equipamento->save(false);
+                    }
+                }
+
+                // Atualiza o estado da sala para "Livre"
+                if ($model->sala_id) {
+                    $sala = Sala::findOne($model->sala_id);
+                    if ($sala) {
+                        $sala->estado = Sala::ESTADO_LIVRE;
+                        $sala->save(false);
+                    }
+                }
+
+                Yii::$app->session->setFlash('success', 'Manutenção concluída com sucesso!');
+            } else {
+                Yii::$app->session->setFlash('error', 'Erro ao concluir manutenção.');
+            }
+        } else {
+            Yii::$app->session->setFlash('warning', 'Apenas manutenções em curso podem ser concluídas.');
+        }
+
+        return $this->redirect(['view', 'id' => $model->id]);
+    }
+
+    /**
+     * Action para cancelar manutenção
+     */
+    public function actionCancelar($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->status !== Manutencao::STATUS_CONCLUIDA) {
+            $model->status = Manutencao::STATUS_PENDENTE;
+            $model->dataFim = null;
+
+            if ($model->save()) {
+                Yii::$app->session->setFlash('success', 'Manutenção cancelada/retornada para pendente!');
+            } else {
+                Yii::$app->session->setFlash('error', 'Erro ao cancelar manutenção.');
+            }
+        } else {
+            Yii::$app->session->setFlash('warning', 'Manutenções concluídas não podem ser canceladas.');
+        }
+
+        return $this->redirect(['view', 'id' => $model->id]);
+    }
+
+    /**
+     * Action AJAX para obter informações do equipamento
+     */
+    public function actionGetEquipamentoInfo($id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $equipamento = Equipamento::findOne($id);
+        if (!$equipamento) {
+            return ['success' => false, 'message' => 'Equipamento não encontrado'];
+        }
+
+        $salaEquipamento = SalaEquipamento::find()
+            ->where(['idEquipamento' => $id])
+            ->one();
+
+        $sala = null;
+        $sala_id = null;
+        if ($salaEquipamento) {
+            $sala = Sala::findOne($salaEquipamento->idSala);
+            $sala_id = $salaEquipamento->idSala;
+        }
+
+        return [
+            'success' => true,
+            'equipamento' => [
+                'nome' => $equipamento->equipamento,
+                'numeroSerie' => $equipamento->numeroSerie,
+                'tipo' => $equipamento->tipoEquipamento ? $equipamento->tipoEquipamento->nome : 'N/A',
+                'estado' => $equipamento->estado,
+            ],
+            'sala' => $sala ? [
+                'id' => $sala_id,
+                'nome' => $sala->nome,
+                'bloco' => $sala->bloco ? $sala->bloco->nome : 'N/A',
+            ] : null,
+        ];
+    }
+
+    /**
+     * Action AJAX para obter a sala atual do equipamento
+     */
+    public function actionGetEquipamentoSala($id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $salaEquipamento = SalaEquipamento::find()
+            ->where(['idEquipamento' => $id])
+            ->one();
+
+        if ($salaEquipamento) {
+            return [
+                'success' => true,
+                'sala_id' => $salaEquipamento->idSala,
+            ];
+        }
+
+        return ['success' => false];
     }
 
     protected function findModel($id)

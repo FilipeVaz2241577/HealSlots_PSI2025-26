@@ -6,6 +6,7 @@ use common\models\Sala;
 
 /** @var yii\web\View $this */
 /** @var common\models\Sala $model */
+/** @var array $blocos */
 /** @var yii\bootstrap5\ActiveForm $form */
 ?>
 

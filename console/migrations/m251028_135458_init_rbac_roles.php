@@ -6,7 +6,7 @@ use yii\base\Security;
 /**
  * Class mXXXXXX_XXXXXX_init_rbac_roles
  */
-class mXXXXXX_XXXXXX_init_rbac_roles extends Migration
+class m251028_135458_init_rbac_roles extends Migration
 {
     /**
      * {@inheritdoc}

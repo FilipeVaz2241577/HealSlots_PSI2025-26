@@ -17,12 +17,11 @@ $this->title = 'Suporte';
                     <div class="card-body p-5">
                         <div class="text-center mb-5">
                             <h1 class="display-5 text-primary mb-2"><?= Html::encode($this->title) ?></h1>
-                            <p class="lead">Entre em contacto connosco para qualquer questão ou suporte</p>
+                            <p class="lead">Entre em contacto connosco </p>
                         </div>
 
                         <!-- Formulário de Contacto Centralizado -->
                         <div class="contact-form-wrapper">
-                            <h4 class="text-primary mb-4 text-center">Envie-nos uma mensagem</h4>
 
                             <?php $form = ActiveForm::begin([
                                     'id' => 'contact-form',
@@ -34,14 +33,14 @@ $this->title = 'Suporte';
                                     <?= $form->field($model, 'name')->textInput([
                                             'autofocus' => true,
                                             'class' => 'form-control form-control-lg',
-                                            'placeholder' => 'Seu nome'
+                                            'placeholder' => 'Nome'
                                     ])->label('Nome') ?>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <?= $form->field($model, 'email')->textInput([
                                             'class' => 'form-control form-control-lg',
-                                            'placeholder' => 'seu@email.com'
+                                            'placeholder' => 'Email'
                                     ])->label('Email') ?>
                                 </div>
                             </div>
@@ -57,7 +56,7 @@ $this->title = 'Suporte';
                                 <?= $form->field($model, 'body')->textarea([
                                         'rows' => 5,
                                         'class' => 'form-control form-control-lg',
-                                        'placeholder' => 'Escreva a sua mensagem aqui...'
+                                        'placeholder' => 'Escreve a tua mensagem aqui...'
                                 ])->label('Mensagem') ?>
                             </div>
 

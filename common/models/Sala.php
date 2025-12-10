@@ -3,6 +3,9 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\behaviors\BlameableBehavior;
 
 /**
  * This is the model class for table "sala".
@@ -14,11 +17,8 @@ use Yii;
  *
  * @property Bloco $bloco
  */
-class Sala extends \yii\db\ActiveRecord
+class Sala extends ActiveRecord
 {
-    /**
-     * ENUM field values
-     */
     const ESTADO_LIVRE = 'Livre';
     const ESTADO_EM_USO = 'EmUso';
     const ESTADO_MANUTENCAO = 'Manutencao';
@@ -29,7 +29,16 @@ class Sala extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'sala';
+        return '{{%sala}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+        ];
     }
 
     /**
@@ -64,8 +73,6 @@ class Sala extends \yii\db\ActiveRecord
 
     /**
      * Gets query for [[Bloco]].
-     *
-     * @return \yii\db\ActiveQuery
      */
     public function getBloco()
     {
@@ -198,5 +205,22 @@ class Sala extends \yii\db\ActiveRecord
                     ->andWhere(['IS NOT', 'sala_id', null])
             ])
             ->count();
+    }
+
+    /**
+     * Get equipamentos in this sala
+     */
+    public function getEquipamentos()
+    {
+        return $this->hasMany(Equipamento::class, ['id' => 'idEquipamento'])
+            ->via('salaEquipamentos');
+    }
+
+    /**
+     * Get sala_equipamento relationships
+     */
+    public function getSalaEquipamentos()
+    {
+        return $this->hasMany(SalaEquipamento::class, ['idSala' => 'id']);
     }
 }

@@ -222,18 +222,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         Informações do Sistema
                     </h3>
                 </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <td><small>Criado por:</small></td>
-                            <td><small><?= $model->createdBy ? Html::encode($model->createdBy->username) : '<span class="text-muted">N/A</span>' ?></small></td>
-                        </tr>
-                        <tr>
-                            <td><small>Atualizado por:</small></td>
-                            <td><small><?= $model->updatedBy ? Html::encode($model->updatedBy->username) : '<span class="text-muted">N/A</span>' ?></small></td>
-                        </tr>
-                    </table>
-                </div>
             </div>
         </div>
     </div>
