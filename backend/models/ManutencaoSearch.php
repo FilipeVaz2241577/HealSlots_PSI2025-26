@@ -20,7 +20,7 @@ class ManutencaoSearch extends Manutencao
         return [
             [['id', 'equipamento_id', 'user_id', 'sala_id'], 'integer'],
             [['descricao', 'status', 'equipamentoNome', 'userNome', 'salaNome'], 'safe'],
-            [['dataInicio', 'dataFim', 'created_at', 'updated_at'], 'safe'],
+            [['dataInicio', 'dataFim'], 'safe'],
         ];
     }
 
@@ -51,8 +51,8 @@ class ManutencaoSearch extends Manutencao
         ]);
 
         $dataProvider->sort->attributes['equipamentoNome'] = [
-            'asc' => ['equipamento.nome' => SORT_ASC],
-            'desc' => ['equipamento.nome' => SORT_DESC],
+            'asc' => ['equipamento.equipamento' => SORT_ASC],
+            'desc' => ['equipamento.equipamento' => SORT_DESC],
         ];
 
         $dataProvider->sort->attributes['userNome'] = [
@@ -80,7 +80,7 @@ class ManutencaoSearch extends Manutencao
         ]);
 
         $query->andFilterWhere(['like', 'descricao', $this->descricao])
-            ->andFilterWhere(['like', 'equipamento.nome', $this->equipamentoNome])
+            ->andFilterWhere(['like', 'equipamento.equipamento', $this->equipamentoNome])
             ->andFilterWhere(['like', 'user.username', $this->userNome])
             ->andFilterWhere(['like', 'sala.nome', $this->salaNome]);
 

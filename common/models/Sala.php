@@ -3,6 +3,9 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\behaviors\BlameableBehavior;
 
 /**
  * This is the model class for table "sala".
@@ -14,22 +17,28 @@ use Yii;
  *
  * @property Bloco $bloco
  */
-class Sala extends \yii\db\ActiveRecord
+class Sala extends ActiveRecord
 {
-    /**
-     * ENUM field values
-     */
     const ESTADO_LIVRE = 'Livre';
-    const ESTADO_EM_USO = 'EmUso';
+    const ESTADO_EM_USO = 'EmUso';        // ← USAR APENAS ESTE PARA SALAS RESERVADAS/EM USO
     const ESTADO_MANUTENCAO = 'Manutencao';
-    const ESTADO_DESATIVADA = 'Desativada';
+    const ESTADO_INATIVA = 'Inativa';
 
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'sala';
+        return '{{%sala}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+        ];
     }
 
     /**
@@ -64,8 +73,6 @@ class Sala extends \yii\db\ActiveRecord
 
     /**
      * Gets query for [[Bloco]].
-     *
-     * @return \yii\db\ActiveQuery
      */
     public function getBloco()
     {
@@ -88,9 +95,9 @@ class Sala extends \yii\db\ActiveRecord
     {
         return [
             self::ESTADO_LIVRE => 'Livre',
-            self::ESTADO_EM_USO => 'Em Uso',
-            self::ESTADO_MANUTENCAO => 'Manutenção',
-            self::ESTADO_DESATIVADA => 'Desativada',
+            self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
+            self::ESTADO_MANUTENCAO => 'Em Manutenção',
+            self::ESTADO_INATIVA => 'Inativa',
         ];
     }
 
@@ -99,7 +106,22 @@ class Sala extends \yii\db\ActiveRecord
      */
     public function getEstadoLabel()
     {
-        return self::optsEstado()[$this->estado] ?? 'Desconhecido';
+        $opts = self::optsEstado();
+
+        // Verificar exatamente o valor armazenado
+        if (isset($opts[$this->estado])) {
+            return $opts[$this->estado];
+        }
+
+        // Se não encontrar, verificar case-insensitive
+        $estadoLower = strtolower($this->estado);
+        foreach ($opts as $key => $label) {
+            if (strtolower($key) === $estadoLower) {
+                return $label;
+            }
+        }
+
+        return 'Desconhecido (' . $this->estado . ')';
     }
 
     /**
@@ -144,14 +166,26 @@ class Sala extends \yii\db\ActiveRecord
     /**
      * @return bool
      */
-    public function isEstadoDesativada()
+    public function isEstadoInativa()
     {
-        return $this->estado === self::ESTADO_DESATIVADA;
+        return $this->estado === self::ESTADO_INATIVA;
     }
 
-    public function setEstadoToDesativada()
+    public function setEstadoToInativa()
     {
-        $this->estado = self::ESTADO_DESATIVADA;
+        $this->estado = self::ESTADO_INATIVA;
+    }
+
+    /**
+     * Verifica se a sala está disponível para reserva
+     * @return bool
+     */
+    public function isDisponivelParaReserva()
+    {
+        return in_array($this->estado, [
+            self::ESTADO_LIVRE,
+            self::ESTADO_EM_USO  // Sala ainda pode ser reservada mesmo se já estiver em uso
+        ]);
     }
 
     /**
@@ -198,5 +232,36 @@ class Sala extends \yii\db\ActiveRecord
                     ->andWhere(['IS NOT', 'sala_id', null])
             ])
             ->count();
+    }
+
+    /**
+     * Get equipamentos in this sala
+     */
+    public function getEquipamentos()
+    {
+        return $this->hasMany(Equipamento::class, ['id' => 'idEquipamento'])
+            ->viaTable('sala_equipamento', ['idSala' => 'id']);
+    }
+
+    /**
+     * Get sala_equipamento relationships
+     */
+    public function getSalaEquipamentos()
+    {
+        return $this->hasMany(SalaEquipamento::class, ['idSala' => 'id']);
+    }
+
+    /**
+     * Debug method to check state
+     */
+    public function debugEstado()
+    {
+        return [
+            'estado' => $this->estado,
+            'constante_EM_USO' => self::ESTADO_EM_USO,
+            'getEstadoLabel' => $this->getEstadoLabel(),
+            'optsEstado' => self::optsEstado(),
+            'estado_in_opts' => isset(self::optsEstado()[$this->estado]),
+        ];
     }
 }

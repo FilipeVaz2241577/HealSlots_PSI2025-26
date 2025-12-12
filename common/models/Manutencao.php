@@ -4,8 +4,6 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
-use yii\behaviors\TimestampBehavior;
-use yii\behaviors\BlameableBehavior;
 
 /**
  * This is the model class for table "manutencao".
@@ -18,16 +16,10 @@ use yii\behaviors\BlameableBehavior;
  * @property string $dataFim
  * @property string $descricao
  * @property string $status
- * @property int $created_by
- * @property int $updated_by
- * @property int $created_at
- * @property int $updated_at
  *
  * @property User $user
  * @property Equipamento $equipamento
  * @property Sala $sala
- * @property User $createdBy
- * @property User $updatedBy
  */
 class Manutencao extends ActiveRecord
 {
@@ -41,21 +33,6 @@ class Manutencao extends ActiveRecord
     public static function tableName()
     {
         return '{{%manutencao}}';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-        return [
-            TimestampBehavior::class,
-            [
-                'class' => BlameableBehavior::class,
-                'createdByAttribute' => 'created_by',
-                'updatedByAttribute' => 'updated_by',
-            ],
-        ];
     }
 
     /**
@@ -90,10 +67,6 @@ class Manutencao extends ActiveRecord
             'dataFim' => 'Data Fim',
             'descricao' => 'Descrição',
             'status' => 'Estado',
-            'created_by' => 'Criado Por',
-            'updated_by' => 'Atualizado Por',
-            'created_at' => 'Data Criação',
-            'updated_at' => 'Data Atualização',
         ];
     }
 
@@ -119,22 +92,6 @@ class Manutencao extends ActiveRecord
     public function getSala()
     {
         return $this->hasOne(Sala::class, ['id' => 'sala_id']);
-    }
-
-    /**
-     * Gets query for [[CreatedBy]].
-     */
-    public function getCreatedBy()
-    {
-        return $this->hasOne(User::class, ['id' => 'created_by']);
-    }
-
-    /**
-     * Gets query for [[UpdatedBy]].
-     */
-    public function getUpdatedBy()
-    {
-        return $this->hasOne(User::class, ['id' => 'updated_by']);
     }
 
     /**
@@ -191,5 +148,48 @@ class Manutencao extends ActiveRecord
             return $diff->h + ($diff->days * 24);
         }
         return null;
+    }
+
+    /**
+     * Get the title for display
+     */
+    public function getTitle()
+    {
+        if ($this->equipamento) {
+            return 'Manutenção do Equipamento: ' . $this->equipamento->equipamento;
+        }
+        return 'Manutenção #' . $this->id;
+    }
+
+    /**
+     * Get current location (sala) for equipment maintenance
+     */
+    public function getLocalizacao()
+    {
+        if ($this->sala) {
+            return $this->sala->nome . ($this->sala->bloco ? ' (' . $this->sala->bloco->nome . ')' : '');
+        } elseif ($this->equipamento) {
+            $sala = $this->equipamento->getCurrentSala();
+            if ($sala) {
+                return $sala->nome . ($sala->bloco ? ' (' . $sala->bloco->nome . ')' : '');
+            }
+        }
+        return 'Não localizado';
+    }
+
+    /**
+     * Before save logic
+     */
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            // Se estiver concluindo a manutenção
+            if (!$insert && $this->status === self::STATUS_CONCLUIDA && !$this->dataFim) {
+                $this->dataFim = date('Y-m-d H:i:s');
+            }
+
+            return true;
+        }
+        return false;
     }
 }

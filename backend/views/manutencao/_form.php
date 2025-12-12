@@ -6,10 +6,14 @@
 /** @var array $tecnicosList */
 /** @var array $equipamentosList */
 /** @var array $salasList */
+/** @var int|null $equipamento_id */
 
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 use common\models\Manutencao;
+
+// Garantir que a variável existe
+$equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -33,7 +37,8 @@ use common\models\Manutencao;
         <?= $form->field($model, 'equipamento_id')
             ->dropDownList($equipamentosList, [
                 'class' => 'form-select form-select-lg',
-                'prompt' => '-- Selecione o equipamento --'
+                'prompt' => '-- Selecione o equipamento --',
+                'id' => 'equipamento-select'
             ])
             ->label('Equipamento <span class="text-danger">*</span>')
             ->hint('Equipamento que necessita de manutenção', ['class' => 'form-text text-muted small'])
@@ -44,10 +49,11 @@ use common\models\Manutencao;
         <?= $form->field($model, 'sala_id')
             ->dropDownList($salasList, [
                 'class' => 'form-select form-select-lg',
-                'prompt' => '-- Selecione a sala --'
+                'prompt' => '-- Selecione a sala --',
+                'id' => 'sala-select'
             ])
-            ->label('Sala')
-            ->hint('Sala onde se encontra o equipamento', ['class' => 'form-text text-muted small'])
+            ->label('Sala (Opcional)')
+            ->hint('Sala onde se encontra o equipamento (se aplicável)', ['class' => 'form-text text-muted small'])
         ?>
     </div>
 </div>
@@ -71,7 +77,7 @@ use common\models\Manutencao;
     <div class="col-md-4">
         <?= $form->field($model, 'dataFim')
             ->input('datetime-local')
-            ->label('Data Fim')
+            ->label('Data Fim (Opcional)')
             ->hint('Data e hora de conclusão da manutenção', ['class' => 'form-text text-muted small'])
         ?>
     </div>
@@ -82,7 +88,7 @@ use common\models\Manutencao;
                 'class' => 'form-select form-select-lg',
                 'prompt' => '-- Selecione o técnico --'
             ])
-            ->label('Técnico Responsável')
+            ->label('Técnico Responsável (Opcional)')
             ->hint('Técnico que irá executar a manutenção', ['class' => 'form-text text-muted small'])
         ?>
     </div>
@@ -93,7 +99,7 @@ use common\models\Manutencao;
     <div class="col-12">
         <h4 class="text-primary mb-3">
             <i class="fa fa-cogs me-2"></i>Detalhes
-        </h4>
+            </h4>
     </div>
 
     <div class="col-md-4">
@@ -110,9 +116,10 @@ use common\models\Manutencao;
         <?= $form->field($model, 'descricao')
             ->textarea([
                 'rows' => 4,
-                'placeholder' => 'Descreva detalhadamente a manutenção a ser realizada...'
+                'placeholder' => 'Descreva detalhadamente a manutenção a ser realizada...',
+                'id' => 'descricao-textarea'
             ])
-            ->label('Descrição')
+            ->label('Descrição (Opcional)')
             ->hint('Descrição detalhada dos trabalhos a realizar', ['class' => 'form-text text-muted small'])
         ?>
     </div>
@@ -128,13 +135,72 @@ use common\models\Manutencao;
 
             <?= \yii\bootstrap5\Html::submitButton('<i class="fa fa-save me-2"></i>' . ($model->isNewRecord ? 'Criar Manutenção' : 'Atualizar Manutenção'), [
                 'class' => 'btn btn-lg btn-primary px-4',
-                'name' => 'save-button'
+                'name' => 'save-button',
+                'id' => 'submit-button'
             ]) ?>
         </div>
     </div>
 </div>
 
 <?php ActiveForm::end(); ?>
+
+<!-- JavaScript para preenchimento automático -->
+<?php
+$js = <<<JS
+$(document).ready(function() {
+    // Se vier de um equipamento, seleciona automaticamente
+    var equipamentoId = '$equipamento_id';
+    
+    if (equipamentoId && equipamentoId !== '') {
+        $('#equipamento-select').val(equipamentoId);
+        
+        // Busca informações do equipamento via AJAX
+        $.get('/Projeto/HealSlots/backend/web/manutencao/get-equipamento-info', {id: equipamentoId}, function(data) {
+            if (data.success) {
+                // Preenche a descrição com informações do equipamento
+                var descricaoAtual = $('#descricao-textarea').val();
+                var novaDescricao = 'MANUTENÇÃO DO EQUIPAMENTO:\\n';
+                novaDescricao += '------------------------------\\n';
+                novaDescricao += 'Equipamento: ' + data.equipamento.nome + '\\n';
+                novaDescricao += 'Número de Série: ' + data.equipamento.numeroSerie + '\\n';
+                novaDescricao += 'Tipo: ' + data.equipamento.tipo + '\\n';
+                novaDescricao += 'Estado atual: ' + data.equipamento.estado + '\\n';
+                if (data.sala) {
+                    novaDescricao += 'Localização: ' + data.sala.nome + ' (' + data.sala.bloco + ')\\n';
+                    // Preenche automaticamente a sala se o equipamento estiver em uma
+                    $('#sala-select').val(data.sala.id);
+                } else {
+                    novaDescricao += 'Localização: Equipamento não está atribuído a nenhuma sala\\n';
+                }
+                novaDescricao += '\\nDESCRIÇÃO DA MANUTENÇÃO:\\n';
+                novaDescricao += '------------------------------\\n';
+                if (!descricaoAtual) {
+                    descricaoAtual = 'Descreva aqui os trabalhos a realizar...';
+                }
+                novaDescricao += descricaoAtual;
+                $('#descricao-textarea').val(novaDescricao);
+            }
+        });
+    }
+    
+    // Quando o equipamento é alterado, busca sua sala atual
+    $('#equipamento-select').change(function() {
+        var equipId = $(this).val();
+        if (equipId) {
+            $.get('/Projeto/HealSlots/backend/web/manutencao/get-equipamento-sala', {id: equipId}, function(data) {
+                if (data.success && data.sala_id) {
+                    $('#sala-select').val(data.sala_id);
+                } else {
+                    $('#sala-select').val('');
+                }
+            });
+        }
+    });
+});
+JS;
+
+$this->registerJs($js);
+?>
 
 <!-- CSS adicional -->
 <style>
@@ -167,5 +233,18 @@ use common\models\Manutencao;
     }
     .form-text {
         font-size: 0.85rem;
+    }
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+    #descricao-textarea {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    .field {
+        transition: all 0.3s ease;
     }
 </style>

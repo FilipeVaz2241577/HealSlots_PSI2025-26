@@ -24,41 +24,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
         </div>
     </div>
 
-    <!-- Estatísticas com SmallBox -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $totalBlocosCount ?? 0,
-                'text' => 'Total Blocos',
-                'icon' => 'fas fa-building',
-                'theme' => 'info'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $activeBlocosCount ?? 0,
-                'text' => 'Blocos Ativos',
-                'icon' => 'fas fa-check-circle',
-                'theme' => 'success'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $inactiveBlocosCount ?? 0,
-                'text' => 'Blocos Inativos',
-                'icon' => 'fas fa-times-circle',
-                'theme' => 'warning'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $totalSalasCount ?? 0,
-                'text' => 'Total Salas',
-                'icon' => 'fas fa-door-open',
-                'theme' => 'primary'
-            ]) ?>
-        </div>
-    </div>
+
 
     <!-- Card Principal -->
     <div class="row">
@@ -295,6 +261,42 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Estatísticas com SmallBox -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $totalBlocosCount ?? 0,
+            'text' => 'Total Blocos',
+            'icon' => 'fas fa-building',
+            'theme' => 'info'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $activeBlocosCount ?? 0,
+            'text' => 'Blocos Ativos',
+            'icon' => 'fas fa-check-circle',
+            'theme' => 'success'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $inactiveBlocosCount ?? 0,
+            'text' => 'Blocos Inativos',
+            'icon' => 'fas fa-times-circle',
+            'theme' => 'warning'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $totalSalasCount ?? 0,
+            'text' => 'Total Salas',
+            'icon' => 'fas fa-door-open',
+            'theme' => 'primary'
+        ]) ?>
     </div>
 </div>
 

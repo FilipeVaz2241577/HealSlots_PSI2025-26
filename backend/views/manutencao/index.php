@@ -1,6 +1,7 @@
 <?php
 /** @var yii\web\View $this */
 
+use hail812\adminlte\widgets\Alert;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 use yii\grid\GridView;
@@ -9,6 +10,16 @@ use common\models\Manutencao;
 
 $this->title = 'Gestão de Manutenções';
 ?>
+
+<!-- Alert Básico -->
+<div class="row">
+    <div class="col-12">
+        <?= Alert::widget([
+            'type' => 'info',
+            'body' => '<h4><i class="icon fas fa-hospital"></i> Gestão de Blocos Operatórios</h4>Utilize esta página para gerir todos os blocos operatórios do sistema',
+        ]) ?>
+    </div>
+</div>
 
 <div class="manutencao-index">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -52,7 +63,12 @@ $this->title = 'Gestão de Manutenções';
                                                         <td>
                                                             <?= Html::a('Criar Manutenção',
                                                                 ['create', 'equipamento_id' => $equipamento->id],
-                                                                ['class' => 'btn btn-sm btn-outline-primary']
+                                                                [
+                                                                    'class' => 'btn btn-sm btn-outline-primary',
+                                                                    'title' => 'Criar manutenção para este equipamento. Você poderá adicionar uma sala se necessário.',
+                                                                    'data-bs-toggle' => 'tooltip',
+                                                                    'data-bs-placement' => 'top'
+                                                                ]
                                                             ) ?>
                                                             <?= Html::a('Ver',
                                                                 ['/equipamento/view', 'id' => $equipamento->id],
@@ -92,7 +108,7 @@ $this->title = 'Gestão de Manutenções';
                                                         <td><?= $sala->bloco ? Html::encode($sala->bloco->nome) : '-' ?></td>
                                                         <td>
                                                             <?= Html::a('Criar Manutenção',
-                                                                ['create', 'sala_id' => $sala->id],
+                                                                ['create', 'equipamento_id' => $sala->id],
                                                                 ['class' => 'btn btn-sm btn-outline-primary']
                                                             ) ?>
                                                             <?= Html::a('Ver',
@@ -134,7 +150,7 @@ $this->title = 'Gestão de Manutenções';
             </div>
 
             <!-- Tabela CRUD -->
-            <?php Pjax::begin(); ?>
+            <?php Pjax::begin(['id' => 'manutencao-grid']); ?>
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
                 'filterModel' => $searchModel,
@@ -147,7 +163,7 @@ $this->title = 'Gestão de Manutenções';
                     [
                         'attribute' => 'equipamentoNome',
                         'label' => 'Equipamento',
-                        'value' => 'equipamento.nome',
+                        'value' => 'equipamento.equipamento',
                         'headerOptions' => ['style' => 'width: 150px;'],
                     ],
                     [
@@ -217,7 +233,7 @@ $this->title = 'Gestão de Manutenções';
                                     'class' => 'btn btn-sm btn-danger',
                                     'title' => 'Eliminar permanentemente',
                                     'data' => [
-                                        'confirm' => '⚠️ ELIMINAÇÃO PERMANENTE ⚠️\n\nTem a certeza que deseja eliminar PERMANENTEMENTE esta manutenção?\n\nEsta ação NÃO pode ser desfeita!',
+                                        'confirm' => 'Tem a certeza que deseja eliminar PERMANENTEMENTE esta manutenção?\n\nEsta ação NÃO pode ser desfeita!',
                                         'method' => 'post',
                                     ],
                                 ]);
@@ -276,53 +292,3 @@ $this->title = 'Gestão de Manutenções';
         </div>
     </div>
 </div>
-
-<!-- CSS adicional -->
-<style>
-    .table th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-    }
-    .btn-sm {
-        margin: 0 2px;
-    }
-    .badge {
-        font-size: 0.75em;
-    }
-    .text-truncate {
-        max-width: 200px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .alert-warning .card {
-        margin-bottom: 0;
-    }
-    .alert-warning .table {
-        margin-bottom: 0;
-    }
-</style>
-
-<script>
-    // Confirmação reforçada para eliminação permanente
-    document.addEventListener('DOMContentLoaded', function() {
-        const deleteButtons = document.querySelectorAll('a.btn-danger[data-confirm]');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                const confirmationMessage = '🚨 ELIMINAÇÃO PERMANENTE 🚨\n\n' +
-                    'Tem a ABSOLUTA certeza que deseja eliminar PERMANENTEMENTE esta manutenção?\n\n' +
-                    '▶️ Esta ação NÃO pode ser desfeita!\n' +
-                    '▶️ Todos os dados da manutenção serão PERDIDOS!\n\n' +
-                    'Digite "ELIMINAR" para confirmar:';
-
-                const userInput = prompt(confirmationMessage);
-                if (userInput !== 'ELIMINAR') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    alert('Eliminação cancelada.');
-                    return false;
-                }
-            });
-        });
-    });
-</script>

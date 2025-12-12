@@ -22,6 +22,7 @@ class Bloco extends \yii\db\ActiveRecord
     const ESTADO_ATIVO = 'ativo';
     const ESTADO_INATIVO = 'inativo';
     const ESTADO_MANUTENCAO = 'manutencao';
+    const ESTADO_USO = 'uso';
 
     /**
      * {@inheritdoc}
@@ -77,6 +78,7 @@ class Bloco extends \yii\db\ActiveRecord
             self::ESTADO_ATIVO => 'Ativo',
             self::ESTADO_INATIVO => 'Inativo',
             self::ESTADO_MANUTENCAO => 'Manutenção',
+            self::ESTADO_USO => 'Uso',
         ];
     }
 
@@ -125,5 +127,13 @@ class Bloco extends \yii\db\ActiveRecord
     public function setEstadoToManutencao()
     {
         $this->estado = self::ESTADO_MANUTENCAO;
+    }
+
+    public function isEstadoUso(){
+        return $this->estado === self::ESTADO_USO;
+    }
+
+    public function setEstadoToUso(){
+        $this->estado = self::ESTADO_USO;
     }
 }

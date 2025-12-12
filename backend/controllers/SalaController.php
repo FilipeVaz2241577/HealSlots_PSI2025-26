@@ -65,9 +65,15 @@ class SalaController extends Controller
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
+        // CORREÇÃO: Usar indexBy para criar array [id => nome]
+        $blocosList = Bloco::find()
+            ->select(['nome', 'id'])
+            ->indexBy('id')
+            ->column();
+
         return $this->render('create', [
             'model' => $model,
-            'blocos' => Bloco::find()->select(['nome', 'id'])->indexBy('id')->column(),
+            'blocos' => $blocosList, // Passar array formatada
         ]);
     }
 
