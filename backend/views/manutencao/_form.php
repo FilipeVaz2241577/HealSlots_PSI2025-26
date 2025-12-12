@@ -99,7 +99,7 @@ $equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
     <div class="col-12">
         <h4 class="text-primary mb-3">
             <i class="fa fa-cogs me-2"></i>Detalhes
-            </h5>
+            </h4>
     </div>
 
     <div class="col-md-4">
