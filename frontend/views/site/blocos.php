@@ -7,7 +7,7 @@
 /** @var int $totalSalas */
 /** @var int $blocosAtivos */
 /** @var int $blocosManutencao */
-/** @var int $blocosInativos */
+/** @var int $blocosDesativados */
 /** @var int $blocosUso */
 
 use yii\bootstrap5\Html;
@@ -20,9 +20,8 @@ $this->params['breadcrumbs'][] = $this->title;
 // Mapear cores para estados (usando os métodos do modelo)
 $coresEstado = [
         \common\models\Bloco::ESTADO_ATIVO => 'success',
-        \common\models\Bloco::ESTADO_INATIVO => 'secondary',
+        \common\models\Bloco::ESTADO_DESATIVADO => 'secondary',
         \common\models\Bloco::ESTADO_MANUTENCAO => 'warning',
-        \common\models\Bloco::ESTADO_USO => 'danger',  // ESTADO_USO já está como 'danger' (vermelho)
 ];
 ?>
 
@@ -120,13 +119,13 @@ $coresEstado = [
                                             $salasLivres = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_LIVRE])->count();
                                             $salasEmUso = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_EM_USO])->count();
                                             $salasManutencao = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_MANUTENCAO])->count();
-                                            $salasInativas = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_INATIVA])->count(); // ATUALIZADO
+                                            $salasDesativadas = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_DESATIVADA])->count(); // ATUALIZADO
                                             ?>
                                             <small class="text-muted">
                                                 <span class="text-success"><?= $salasLivres ?> Livres</span> |
                                                 <span class="text-danger"><?= $salasEmUso ?> Em Uso</span><br>
                                                 <span class="text-warning"><?= $salasManutencao ?> Manutenção</span> |
-                                                <span class="text-secondary"><?= $salasInativas ?> Inativas</span> <!-- ATUALIZADO -->
+                                                <span class="text-secondary"><?= $salasDesativadas ?> Desativadas</span> <!-- ATUALIZADO -->
                                             </small>
                                         </p>
                                     </div>
@@ -175,16 +174,12 @@ $coresEstado = [
                                         <strong><?= $blocosAtivos ?></strong> bloco(s) ativo(s)
                                     </li>
                                     <li>
-                                        <span class="badge bg-danger me-2">&nbsp;</span> <!-- Mudei de bg-secondary para bg-danger -->
-                                        <strong><?= $blocosUso ?></strong> bloco(s) em uso <!-- Mudei de $blocosInativos para $blocosUso -->
-                                    </li>
-                                    <li>
                                         <span class="badge bg-warning me-2">&nbsp;</span>
                                         <strong><?= $blocosManutencao ?></strong> bloco(s) em manutenção
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>
-                                        <strong><?= $blocosInativos ?></strong> bloco(s) inativo(s)
+                                        <strong><?= $blocosDesativados ?></strong> bloco(s) Desativado(s)
                                     </li>
                                 </ul>
                             </div>

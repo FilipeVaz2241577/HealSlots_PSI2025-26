@@ -98,12 +98,8 @@ class ManutencaoController extends Controller
         // Preenche automaticamente se vier de um dos botões
         if ($equipamento_id) {
             $equipamento = Equipamento::findOne($equipamento_id);
-
-
             if ($equipamento) {
                 $model->equipamento_id = $equipamento_id;
-
-                //$equipamento->salaEquipamento;
 
                 // Busca a sala onde o equipamento está atualmente (se existir)
                 $salaEquipamento = SalaEquipamento::find()
@@ -142,19 +138,18 @@ class ManutencaoController extends Controller
 
             // Atualiza o estado do equipamento para "Em Manutenção"
             if ($model->equipamento_id) {
-                //$equipamento = Equipamento::findOne($model->equipamento_id);
-                if ($model->equipamento) {
-                    $model->equipamento->estado = Equipamento::ESTADO_MANUTENCAO;
-
-                    $model->equipamento->save(false);
+                $equipamento = Equipamento::findOne($model->equipamento_id);
+                if ($equipamento) {
+                    $equipamento->estado = Equipamento::ESTADO_MANUTENCAO;
+                    $equipamento->save(false);
                 }
             }
 
             // Atualiza o estado da sala para "Manutencao" se a sala foi especificada
-            if ($model->sala->id) {
+            if ($model->sala_id) {
                 $sala = Sala::findOne($model->sala_id);
                 if ($sala) {
-                    $model->sala->estado = Sala::ESTADO_MANUTENCAO;
+                    $sala->estado = Sala::ESTADO_MANUTENCAO;
                     $sala->save(false);
                 }
             }

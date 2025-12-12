@@ -24,7 +24,7 @@ $coresEstado = [
         \common\models\Sala::ESTADO_LIVRE => 'success',
         \common\models\Sala::ESTADO_EM_USO => 'danger',
         \common\models\Sala::ESTADO_MANUTENCAO => 'warning',
-        \common\models\Sala::ESTADO_INATIVA => 'secondary' // Alterado
+        \common\models\Sala::ESTADO_DESATIVADA => 'secondary' // Alterado
 ];
 
 // Calcular estatísticas
@@ -32,7 +32,7 @@ $totalSalas = count($salas);
 $livres = $contagemPorEstado[\common\models\Sala::ESTADO_LIVRE] ?? 0;
 $emUso = $contagemPorEstado[\common\models\Sala::ESTADO_EM_USO] ?? 0;
 $manutencao = $contagemPorEstado[\common\models\Sala::ESTADO_MANUTENCAO] ?? 0;
-$inativas = $contagemPorEstado[\common\models\Sala::ESTADO_INATIVA] ?? 0; // Alterado
+$desativadas = $contagemPorEstado[\common\models\Sala::ESTADO_DESATIVADA] ?? 0; // Alterado
 ?>
 
 <div class="site-salas">
@@ -229,7 +229,7 @@ $inativas = $contagemPorEstado[\common\models\Sala::ESTADO_INATIVA] ?? 0; // Alt
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>
-                                        <strong><?= $inativas ?></strong> sala(s) inativa(s) <!-- Alterado -->
+                                        <strong><?= $desativadas ?></strong> sala(s) desativadas(s) <!-- Alterado -->
                                     </li>
                                 </ul>
                             </div>

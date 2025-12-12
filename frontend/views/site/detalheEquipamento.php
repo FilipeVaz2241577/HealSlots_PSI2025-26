@@ -188,10 +188,6 @@ $this->title = "Detalhes - " . Html::encode($equipamentoModel->equipamento);
                                     <h5 class="mb-0">Ações Rápidas</h5>
                                 </div>
                                 <div class="card-body">
-                                    <?php if ($equipamentoModel->estado === 'Operacional'): ?>
-                                        <?= Html::a('<i class="fas fa-calendar-plus me-1"></i> Reservar',
-                                                ['#'], ['class' => 'btn btn-success w-100 mb-2']) ?>
-                                    <?php endif; ?>
 
                                     <!-- BOTÃO SOLICITAR MANUTENÇÃO -->
                                     <?php if ($equipamentoModel->estado !== \common\models\Equipamento::ESTADO_MANUTENCAO): ?>

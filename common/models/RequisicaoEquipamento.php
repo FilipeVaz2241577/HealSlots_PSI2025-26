@@ -15,8 +15,6 @@ use Yii;
  */
 class RequisicaoEquipamento extends \yii\db\ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
@@ -69,5 +67,4 @@ class RequisicaoEquipamento extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Requisicao::class, ['id' => 'idRequisicao']);
     }
-
 }

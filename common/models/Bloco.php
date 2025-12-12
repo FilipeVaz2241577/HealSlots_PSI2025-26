@@ -20,9 +20,8 @@ class Bloco extends \yii\db\ActiveRecord
      * ENUM field values
      */
     const ESTADO_ATIVO = 'ativo';
-    const ESTADO_INATIVO = 'inativo';
+    const ESTADO_DESATIVADO = 'desativado';
     const ESTADO_MANUTENCAO = 'manutencao';
-    const ESTADO_USO = 'uso';
 
     /**
      * {@inheritdoc}
@@ -76,9 +75,8 @@ class Bloco extends \yii\db\ActiveRecord
     {
         return [
             self::ESTADO_ATIVO => 'Ativo',
-            self::ESTADO_INATIVO => 'Inativo',
+            self::ESTADO_DESATIVADO => 'Desativado',
             self::ESTADO_MANUTENCAO => 'Manutenção',
-            self::ESTADO_USO => 'Uso',
         ];
     }
 
@@ -106,14 +104,14 @@ class Bloco extends \yii\db\ActiveRecord
     /**
      * @return bool
      */
-    public function isEstadoInativo()
+    public function isEstadoDesativado()
     {
-        return $this->estado === self::ESTADO_INATIVO;
+        return $this->estado === self::ESTADO_DESATIVADO;
     }
 
-    public function setEstadoToInativo()
+    public function setEstadoToDesativado()
     {
-        $this->estado = self::ESTADO_INATIVO;
+        $this->estado = self::ESTADO_DESATIVADO;
     }
 
     /**
@@ -129,11 +127,4 @@ class Bloco extends \yii\db\ActiveRecord
         $this->estado = self::ESTADO_MANUTENCAO;
     }
 
-    public function isEstadoUso(){
-        return $this->estado === self::ESTADO_USO;
-    }
-
-    public function setEstadoToUso(){
-        $this->estado = self::ESTADO_USO;
-    }
 }

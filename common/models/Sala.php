@@ -20,9 +20,9 @@ use yii\behaviors\BlameableBehavior;
 class Sala extends ActiveRecord
 {
     const ESTADO_LIVRE = 'Livre';
-    const ESTADO_EM_USO = 'EmUso';        // ← USAR APENAS ESTE PARA SALAS RESERVADAS/EM USO
+    const ESTADO_EM_USO = 'EmUso';
     const ESTADO_MANUTENCAO = 'Manutencao';
-    const ESTADO_INATIVA = 'Inativa';
+    const ESTADO_DESATIVADA = 'Desativada';
 
     /**
      * {@inheritdoc}
@@ -97,7 +97,7 @@ class Sala extends ActiveRecord
             self::ESTADO_LIVRE => 'Livre',
             self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
             self::ESTADO_MANUTENCAO => 'Em Manutenção',
-            self::ESTADO_INATIVA => 'Inativa',
+            self::ESTADO_DESATIVADA => 'Desativada',
         ];
     }
 
@@ -166,14 +166,14 @@ class Sala extends ActiveRecord
     /**
      * @return bool
      */
-    public function isEstadoInativa()
+    public function isEstadoDesativada()
     {
-        return $this->estado === self::ESTADO_INATIVA;
+        return $this->estado === self::ESTADO_DESATIVADA;
     }
 
-    public function setEstadoToInativa()
+    public function setEstadoToDesativada()
     {
-        $this->estado = self::ESTADO_INATIVA;
+        $this->estado = self::ESTADO_DESATIVADA;
     }
 
     /**

@@ -4,7 +4,7 @@ use yii\bootstrap5\Html;
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="<?= Yii::$app->homeUrl ?>" class="brand-link">
-        <img src="<?=$assetDir?>/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <img src="<?= Yii::getAlias('@web') ?>/img/logo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
         <span class="brand-text font-weight-light"><?= Html::encode(Yii::$app->name) ?></span>
     </a>
 
@@ -35,6 +35,12 @@ use yii\bootstrap5\Html;
                         'icon' => 'users',
                         'url' => ['/utilizador/index'],
                         'badge' => '<span class="right badge badge-primary">Gestão</span>'
+                    ],
+                    [
+                        'label' => 'REQUISIÇÕES',  // NOVO MENU SIMPLES
+                        'icon' => 'calendar-alt',
+                        'url' => ['/requisicao/index'],
+                        'badge' => '<span class="right badge badge-success">Gestão</span>'
                     ],
                     [
                         'label' => 'MANUTENÇÕES',

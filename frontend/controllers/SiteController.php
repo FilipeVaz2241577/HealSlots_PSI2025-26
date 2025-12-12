@@ -197,7 +197,7 @@ class SiteController extends Controller
         $totalSalas = 0;
         $blocosAtivos = 0;
         $blocosManutencao = 0;
-        $blocosInativos = 0;
+        $blocosDesativados = 0;
         $blocosUso = 0; // VARIÁVEL ADICIONADA AQUI
 
         foreach ($blocos as $bloco) {
@@ -207,8 +207,8 @@ class SiteController extends Controller
                 $blocosAtivos++;
             } elseif ($bloco->isEstadoManutencao()) {
                 $blocosManutencao++;
-            } elseif ($bloco->isEstadoInativo()) {
-                $blocosInativos++;
+            } elseif ($bloco->isEstadoDesativado()) {
+                $blocosDesativados++;
             } elseif ($bloco->isEstadoUso()) { // VERIFICAÇÃO ADICIONADA AQUI
                 $blocosUso++;
             }
@@ -221,7 +221,7 @@ class SiteController extends Controller
             'totalSalas' => $totalSalas,
             'blocosAtivos' => $blocosAtivos,
             'blocosManutencao' => $blocosManutencao,
-            'blocosInativos' => $blocosInativos,
+            'blocosDesativados' => $blocosDesativados,
             'blocosUso' => $blocosUso, // VARIÁVEL PASSADA PARA A VIEW AQUI
         ]);
     }
