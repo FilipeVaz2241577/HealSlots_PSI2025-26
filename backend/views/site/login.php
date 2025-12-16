@@ -1,138 +1,329 @@
 <?php
-
-/** @var yii\web\View $this */
-/** @var yii\bootstrap5\ActiveForm $form */
-/** @var \common\models\LoginForm $model */
-
-use yii\bootstrap5\ActiveForm;
-use yii\bootstrap5\Html;
-
-$this->title = 'Login';
+use yii\helpers\Html;
+use yii\bootstrap4\ActiveForm;
+use yii\bootstrap4\Alert;
 ?>
 
-    <!DOCTYPE html>
-    <html lang="<?= Yii::$app->language ?>">
-
-    <head>
-        <meta charset="<?= Yii::$app->charset ?>">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="" name="keywords">
-        <meta content="" name="description">
-        <?php $this->registerCsrfMetaTags() ?>
-        <title><?= Html::encode($this->title) ?> - <?= Html::encode(Yii::$app->name) ?></title>
-
-        <!-- Favicon -->
-        <link href="<?= Yii::getAlias('@web') ?>/img/favicon.ico" rel="icon">
-
-        <!-- Google Web Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-        <!-- Icon Font Stylesheet -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-        <!-- Libraries Stylesheet -->
-        <link href="<?= Yii::getAlias('@web') ?>/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-        <link href="<?= Yii::getAlias('@web') ?>/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
-
-        <!-- Customized Bootstrap Stylesheet -->
-        <link href="<?= Yii::getAlias('@web') ?>/css/bootstrap.min.css" rel="stylesheet">
-
-        <!-- Template Stylesheet -->
-        <link href="<?= Yii::getAlias('@web') ?>/css/style.css" rel="stylesheet">
-
-        <?php $this->head() ?>
-    </head>
-
-    <body>
-    <?php $this->beginBody() ?>
-
-    <div class="container-fluid position-relative bg-white d-flex p-0">
-        <!-- Spinner Start -->
-        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
+<div class="login-container">
+    <div class="login-card">
+        <!-- Header Simples -->
+        <div class="login-header">
+            <div class="logo">
+                <i class="fas fa-hospital-alt"></i>
+                <h1>HealSlots</h1>
             </div>
+            <p class="system-name">Sistema de Gestão</p>
         </div>
-        <!-- Spinner End -->
 
-        <!-- Sign In Start -->
-        <div class="container-fluid">
-            <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
-                <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
-                    <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <a href="<?= Yii::$app->homeUrl ?>" class="">
-                                <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i><?= Html::encode(Yii::$app->name) ?></h3>
-                            </a>
-                            <h3>Sign In</h3>
-                        </div>
+        <div class="login-body">
+            <!-- Mensagem de erro geral -->
+            <?php if (Yii::$app->session->hasFlash('error')): ?>
+                <div class="alert-message">
+                    <?= Alert::widget([
+                        'body' => Yii::$app->session->getFlash('error'),
+                        'options' => [
+                            'class' => 'alert-danger',
+                            'style' => 'margin-bottom: 20px;'
+                        ]
+                    ]) ?>
+                </div>
+            <?php endif; ?>
 
-                        <?php $form = ActiveForm::begin([
-                            'id' => 'login-form',
-                            'fieldConfig' => [
-                                'options' => ['class' => 'form-floating mb-3'],
-                                'inputOptions' => ['class' => 'form-control'],
-                                'labelOptions' => ['class' => 'form-label'],
-                            ],
-                        ]); ?>
+            <?php $form = ActiveForm::begin([
+                'id' => 'login-form',
+                'fieldConfig' => [
+                    'errorOptions' => ['class' => 'error-message']
+                ]
+            ]) ?>
 
-                        <?= $form->field($model, 'username', [
-                            'template' => '{input}{label}{error}'
-                        ])->textInput([
-                            'autofocus' => true,
-                            'placeholder' => 'name@example.com',
-                            'id' => 'floatingInput'
-                        ])->label('Email address') ?>
-
-                        <?= $form->field($model, 'password', [
-                            'template' => '{input}{label}{error}'
-                        ])->passwordInput([
-                            'placeholder' => 'Password',
-                            'id' => 'floatingPassword'
-                        ])->label('Password') ?>
-
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <?= $form->field($model, 'rememberMe', [
-                                'options' => ['class' => 'form-check mb-0'],
-                                'inputOptions' => ['class' => 'form-check-input'],
-                                'labelOptions' => ['class' => 'form-check-label'],
-                            ])->checkbox() ?>
-                            <a href="">Forgot Password</a>
-                        </div>
-
-                        <?= Html::submitButton('Sign In', [
-                            'class' => 'btn btn-primary py-3 w-100 mb-4',
-                            'name' => 'login-button'
+            <!-- Campo Username -->
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <?= $form->field($model, 'username')
+                        ->label(false)
+                        ->textInput([
+                            'placeholder' => 'Utilizador',
+                            'class' => 'form-control',
+                            'autofocus' => true
                         ]) ?>
-
-                        <?php ActiveForm::end(); ?>
-
-                        <p class="text-center mb-0">Don't have an Account? <a href="">Sign Up</a></p>
-                    </div>
+                </div>
+                <div class="error-container">
+                    <?= Html::error($model, 'username', ['class' => 'error-message']) ?>
                 </div>
             </div>
+
+            <!-- Campo Password -->
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <?= $form->field($model, 'password')
+                        ->label(false)
+                        ->passwordInput([
+                            'placeholder' => 'Password',
+                            'class' => 'form-control',
+                            'id' => 'password-field'
+                        ]) ?>
+                    <button type="button" class="password-toggle" id="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="error-container">
+                    <?= Html::error($model, 'password', ['class' => 'error-message']) ?>
+                </div>
+            </div>
+
+            <!-- Lembrar-me -->
+            <div class="form-group remember-me">
+                <?= $form->field($model, 'rememberMe')->checkbox([
+                    'label' => 'Manter sessão iniciada'
+                ]) ?>
+            </div>
+
+            <!-- Botão de Login -->
+            <div class="form-group">
+                <?= Html::submitButton('Entrar', [
+                    'class' => 'btn btn-primary btn-block btn-login',
+                    'name' => 'login-button'
+                ]) ?>
+            </div>
+
+            <?php ActiveForm::end(); ?>
+
         </div>
-        <!-- Sign In End -->
     </div>
+</div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/chart/chart.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/easing/easing.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/waypoints/waypoints.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="<?= Yii::getAlias('@web') ?>/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        padding: 20px;
+    }
 
-    <!-- Template Javascript -->
-    <script src="<?= Yii::getAlias('@web') ?>/js/main.js"></script>
+    .login-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        border: 1px solid #dee2e6;
+    }
 
-    <?php $this->endBody() ?>
-    </body>
-    </html>
-<?php $this->endPage() ?>
+    .login-header {
+        padding: 30px 30px 20px;
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+        background: #fff;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .logo i {
+        font-size: 2rem;
+        color: #007bff;
+    }
+
+    .logo h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0;
+    }
+
+    .system-name {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .login-body {
+        padding: 30px;
+    }
+
+    .alert-message {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto 20px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+        padding: 12px 15px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 4px;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        color: #6c757d;
+        z-index: 3;
+    }
+
+    .form-control {
+        padding-left: 40px;
+        padding-right: 40px;
+        height: 45px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .password-toggle:hover {
+        color: #495057;
+    }
+
+    .error-container {
+        width: 100%;
+        max-width: 300px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 2px;
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
+
+    .remember-me {
+        margin-bottom: 1.5rem;
+        justify-content: center;
+    }
+
+    .remember-me .checkbox {
+        margin: 0;
+    }
+
+    .btn-login {
+        height: 45px;
+        font-weight: 500;
+        background: #007bff;
+        border: none;
+        border-radius: 4px;
+        max-width: 300px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .help-link {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .help-link:hover {
+        color: #007bff;
+        text-decoration: underline;
+    }
+
+    /* Estados de loading */
+    .btn-loading {
+        position: relative;
+        color: transparent;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid transparent;
+        border-top: 2px solid #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const passwordToggle = document.getElementById('password-toggle');
+        const passwordField = document.getElementById('password-field');
+
+        if (passwordToggle && passwordField) {
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        // Loading state no botão
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.querySelector('.btn-login');
+
+        if (loginForm && loginButton) {
+            loginForm.addEventListener('submit', function() {
+                loginButton.classList.add('btn-loading');
+                loginButton.disabled = true;
+            });
+        }
+    });
+</script>

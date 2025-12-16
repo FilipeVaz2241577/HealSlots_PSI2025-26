@@ -60,8 +60,8 @@ $this->registerCss("
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0">
                         <a href="<?= Yii::$app->homeUrl ?>" class="nav-item nav-link <?= $this->title == 'Home' ? 'active' : '' ?>">Home</a>
-                        <a href="<?= \yii\helpers\Url::to(['/site/equipamentos']) ?>" class="nav-item nav-link <?= $this->title == 'Equipamentos' ? 'active' : '' ?>">Equipamentos</a>
-                        <a href="<?= \yii\helpers\Url::to(['/site/salas']) ?>" class="nav-item nav-link <?= $this->title == 'Salas' ? 'active' : '' ?>">Blocos/Salas</a>
+                        <a href="<?= \yii\helpers\Url::to(['/site/tiposequipamento']) ?>" class="nav-item nav-link <?= $this->title == 'Equipamentos' ? 'active' : '' ?>">Equipamentos</a>
+                        <a href="<?= \yii\helpers\Url::to(['/site/blocos']) ?>" class="nav-item nav-link <?= $this->title == 'Blocos' ? 'active' : '' ?>">Blocos/Salas</a>
                         <a href="<?= \yii\helpers\Url::to(['/site/suporte']) ?>" class="nav-item nav-link <?= $this->title == 'Suporte' ? 'active' : '' ?>">Suporte</a>
 
                         <?php if (Yii::$app->user->isGuest): ?>
