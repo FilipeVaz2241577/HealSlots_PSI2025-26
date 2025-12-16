@@ -179,7 +179,7 @@ $coresEstado = [
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>
-                                        <strong><?= $blocosDesativados ?></strong> bloco(s) Desativado(s)
+                                        <strong><?= $blocosDesativados ?></strong> bloco(s) desativado(s)
                                     </li>
                                 </ul>
                             </div>
