@@ -13,9 +13,6 @@
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-$this->title = 'Blocos Hospitalares';
-$this->params['breadcrumbs'][] = $this->title;
-
 
 // Mapear cores para estados (usando os métodos do modelo)
 $coresEstado = [

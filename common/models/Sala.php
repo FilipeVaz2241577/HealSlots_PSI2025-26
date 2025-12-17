@@ -95,7 +95,7 @@ class Sala extends ActiveRecord
     {
         return [
             self::ESTADO_LIVRE => 'Livre',
-            self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
+            self::ESTADO_EM_USO => 'Em Uso',
             self::ESTADO_MANUTENCAO => 'Em Manutenção',
             self::ESTADO_DESATIVADA => 'Desativada',
         ];
@@ -182,10 +182,8 @@ class Sala extends ActiveRecord
      */
     public function isDisponivelParaReserva()
     {
-        return in_array($this->estado, [
-            self::ESTADO_LIVRE,
-            self::ESTADO_EM_USO  // Sala ainda pode ser reservada mesmo se já estiver em uso
-        ]);
+        // CORREÇÃO: Apenas salas LIVRES podem ser reservadas
+        return $this->estado === self::ESTADO_LIVRE;
     }
 
     /**
