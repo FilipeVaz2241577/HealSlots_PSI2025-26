@@ -12,7 +12,11 @@ return [
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
-    'modules' => [],
+    'modules' => [
+            'api' => [
+                'class' => 'backend\modules\api\ModuleAPI',
+            ]
+    ],
     'components' => [
         'view' => [
             'theme' => [
@@ -49,6 +53,69 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/users' => 'api/users',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/salas' => 'api/salas',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/equipamentos' => 'api/equipamentos',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/tipoequipamentos' => 'api/tipoequipamentos',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/blocos' => 'api/blocos',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/manutencoes' => 'api/manutencoes',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/requisicoes' => 'api/requisicoes',
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
             ],
         ],
     ],

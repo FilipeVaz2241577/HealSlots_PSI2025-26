@@ -63,7 +63,7 @@ class RbacController extends Controller
         $auth->add($viewResources);
 
         $manageRooms = $auth->createPermission('manageRooms');
-        $manageRooms->description = 'Gerir Salas e Blocos';
+        $manageRooms->description = 'Gerir Salas e blocos';
         $auth->add($manageRooms);
 
         $reportIssues = $auth->createPermission('reportIssues');

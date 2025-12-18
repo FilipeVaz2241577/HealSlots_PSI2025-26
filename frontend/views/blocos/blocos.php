@@ -6,22 +6,17 @@
 /** @var int $totalBlocos */
 /** @var int $totalSalas */
 /** @var int $blocosAtivos */
-/** @var int $blocosManutencao */
 /** @var int $blocosDesativados */
 /** @var int $blocosUso */
 
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-$this->title = 'Blocos Hospitalares';
-$this->params['breadcrumbs'][] = $this->title;
-
 
 // Mapear cores para estados (usando os métodos do modelo)
 $coresEstado = [
         \common\models\Bloco::ESTADO_ATIVO => 'success',
         \common\models\Bloco::ESTADO_DESATIVADO => 'secondary',
-        \common\models\Bloco::ESTADO_MANUTENCAO => 'warning',
 ];
 ?>
 
@@ -172,10 +167,6 @@ $coresEstado = [
                                     <li>
                                         <span class="badge bg-success me-2">&nbsp;</span>
                                         <strong><?= $blocosAtivos ?></strong> bloco(s) ativo(s)
-                                    </li>
-                                    <li>
-                                        <span class="badge bg-warning me-2">&nbsp;</span>
-                                        <strong><?= $blocosManutencao ?></strong> bloco(s) em manutenção
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>

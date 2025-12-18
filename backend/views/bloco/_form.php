@@ -14,10 +14,11 @@ use yii\bootstrap5\Html;
         'id' => 'bloco-form',
         'options' => ['class' => 'form-horizontal'],
         'fieldConfig' => [
-            'template' => "{label}\n{input}\n{error}",
+            'template' => "{label}\n{input}\n{hint}\n{error}",
             'labelOptions' => ['class' => 'form-label fw-bold'],
             'inputOptions' => ['class' => 'form-control'],
-            'errorOptions' => ['class' => 'invalid-feedback'],
+            'errorOptions' => ['class' => 'invalid-feedback d-block'],
+            'hintOptions' => ['class' => 'form-text text-muted small'],
         ],
     ]); ?>
 
@@ -26,8 +27,10 @@ use yii\bootstrap5\Html;
         <div class="col-md-8">
             <?= $form->field($model, 'nome')->textInput([
                 'maxlength' => true,
-                'placeholder' => 'Digite o nome do bloco operatório'
-            ])->label('Nome do Bloco <span class="text-danger">*</span>') ?>
+                'placeholder' => 'Digite o nome do bloco operatório',
+                // REMOVIDO autofocus
+            ])->label('Nome do Bloco <span class="text-danger">*</span>')
+                ->hint('O nome deve ser único em todo o sistema.') ?>
         </div>
 
         <!-- Campo Estado -->
@@ -35,7 +38,6 @@ use yii\bootstrap5\Html;
             <?= $form->field($model, 'estado')->dropDownList([
                 'ativo' => 'Ativo',
                 'inativo' => 'Inativo',
-                'manutencao' => 'Em Manutenção'
             ], [
                 'prompt' => 'Selecione o estado',
                 'class' => 'form-select'
@@ -51,9 +53,6 @@ use yii\bootstrap5\Html;
                 <div class="row mt-2">
                     <div class="col-md-4">
                         <strong class="text-success">• Ativo:</strong> Bloco disponível para uso
-                    </div>
-                    <div class="col-md-4">
-                        <strong class="text-warning">• Em Manutenção:</strong> Bloco temporariamente indisponível
                     </div>
                     <div class="col-md-4">
                         <strong class="text-danger">• Inativo:</strong> Bloco permanentemente desativado
@@ -121,26 +120,6 @@ use yii\bootstrap5\Html;
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-3">
-                <div class="card border-0 bg-light">
-                    <div class="card-body text-center">
-                        <i class="fas fa-tools fa-2x text-warning mb-2"></i>
-                        <h6 class="card-title">Salas Manutenção</h6>
-                        <p class="card-text h4 text-dark">
-                            <?php
-                            $manutencao = 0;
-                            if ($model->salas) {
-                                foreach ($model->salas as $sala) {
-                                    if ($sala->estado === 'Em Manutencao') $manutencao++;
-                                }
-                            }
-                            echo $manutencao;
-                            ?>
-                        </p>
-                    </div>
-                </div>
-            </div>
         </div>
     <?php endif; ?>
 
@@ -170,7 +149,8 @@ use yii\bootstrap5\Html;
 
                 <?= Html::submitButton('<i class="fas fa-save me-2"></i>' . ($model->isNewRecord ? 'Criar Bloco' : 'Guardar Alterações'), [
                     'class' => 'btn btn-primary',
-                    'name' => 'submit-button'
+                    'name' => 'submit-button',
+                    'type' => 'submit', // Garantir que é type="submit"
                 ]) ?>
             </div>
         </div>
@@ -200,7 +180,10 @@ use yii\bootstrap5\Html;
     }
     .alert-info {
         background-color: #d1ecf1;
-        border-color: #bee5eb;
-        color: #0c5460;
+        border-color: '#bee5eb';
+        color: '#0c5460';
+    }
+    .is-invalid {
+        border-color: '#dc3545';
     }
 </style>

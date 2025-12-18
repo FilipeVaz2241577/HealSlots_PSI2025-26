@@ -1,5 +1,6 @@
 <?php
 
+use hail812\adminlte\widgets\Alert;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 use yii\grid\GridView;
@@ -8,79 +9,15 @@ use hail812\adminlte\widgets\SmallBox;
 
 $this->title = 'Gestão de Requisições';
 $this->params['breadcrumbs'] = [['label' => $this->title]];
-
-// Configuração do datepicker
-$this->registerCss('
-    .daterangepicker-input {
-        cursor: pointer;
-    }
-');
-$this->registerJs('
-    $(function() {
-        // Date range picker para data de início
-        $(\'#requisicaosearch-datainicio_range\').daterangepicker({
-            locale: {
-                format: \'YYYY-MM-DD\',
-                separator: \' - \',
-                applyLabel: \'Aplicar\',
-                cancelLabel: \'Cancelar\',
-                daysOfWeek: [\'Dom\', \'Seg\', \'Ter\', \'Qua\', \'Qui\', \'Sex\', \'Sáb\'],
-                monthNames: [\'Janeiro\', \'Fevereiro\', \'Março\', \'Abril\', \'Maio\', \'Junho\', \'Julho\', \'Agosto\', \'Setembro\', \'Outubro\', \'Novembro\', \'Dezembro\'],
-                firstDay: 1
-            },
-            autoApply: true
-        });
-
-        // Date range picker para data de fim
-        $(\'#requisicaosearch-datafim_range\').daterangepicker({
-            locale: {
-                format: \'YYYY-MM-DD\',
-                separator: \' - \',
-                applyLabel: \'Aplicar\',
-                cancelLabel: \'Cancelar\',
-                daysOfWeek: [\'Dom\', \'Seg\', \'Ter\', \'Qua\', \'Qui\', \'Sex\', \'Sáb\'],
-                monthNames: [\'Janeiro\', \'Fevereiro\', \'Março\', \'Abril\', \'Maio\', \'Junho\', \'Julho\', \'Agosto\', \'Setembro\', \'Outubro\', \'Novembro\', \'Dezembro\'],
-                firstDay: 1
-            },
-            autoApply: true
-        });
-    });
-');
 ?>
 
 <div class="container-fluid">
-    <!-- SmallBox Widgets -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $totalRequisicoes ?? 0,
-                'text' => 'Total Requisições',
-                'icon' => 'fas fa-calendar-alt',
-                'theme' => 'info'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $requisicoesAtivas ?? 0,
-                'text' => 'Requisições Ativas',
-                'icon' => 'fas fa-play-circle',
-                'theme' => 'success'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $requisicoesConcluidas ?? 0,
-                'text' => 'Concluídas',
-                'icon' => 'fas fa-check-circle',
-                'theme' => 'secondary'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $requisicoesCanceladas ?? 0,
-                'text' => 'Canceladas',
-                'icon' => 'fas fa-times-circle',
-                'theme' => 'danger'
+    <!-- Alert -->
+    <div class="row">
+        <div class="col-12">
+            <?= Alert::widget([
+                'type' => 'info',
+                'body' => '<h4><i class="icon fas fa-tools"></i> Gestão de Requisições</h4>Utilize esta página para gerir todas as requisições de salas do sistema',
             ]) ?>
         </div>
     </div>
@@ -100,56 +37,6 @@ $this->registerJs('
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Formulário de Pesquisa -->
-                    <?php $form = ActiveForm::begin([
-                        'method' => 'get',
-                        'action' => ['index'],
-                        'options' => ['class' => 'mb-4']
-                    ]); ?>
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <?= $form->field($searchModel, 'sala_nome')->textInput([
-                                'placeholder' => 'Nome da sala'
-                            ])->label(false) ?>
-                        </div>
-                        <div class="col-md-2">
-                            <?= $form->field($searchModel, 'user_name')->textInput([
-                                'placeholder' => 'Utilizador'
-                            ])->label(false) ?>
-                        </div>
-                        <div class="col-md-2">
-                            <?= $form->field($searchModel, 'status')->dropDownList(
-                                \common\models\Requisicao::optsStatus(),
-                                ['prompt' => 'Todos os estados']
-                            )->label(false) ?>
-                        </div>
-                        <div class="col-md-2">
-                            <?= $form->field($searchModel, 'dataInicio_range')->textInput([
-                                'placeholder' => 'Data de início',
-                                'class' => 'form-control daterangepicker-input'
-                            ])->label(false) ?>
-                        </div>
-                        <div class="col-md-2">
-                            <?= $form->field($searchModel, 'dataFim_range')->textInput([
-                                'placeholder' => 'Data de fim',
-                                'class' => 'form-control daterangepicker-input'
-                            ])->label(false) ?>
-                        </div>
-                        <div class="col-md-1">
-                            <div class="d-flex gap-1">
-                                <?= Html::submitButton('<i class="fas fa-search"></i>', [
-                                    'class' => 'btn btn-primary'
-                                ]) ?>
-                                <?= Html::a('<i class="fas fa-redo"></i>', ['index'], [
-                                    'class' => 'btn btn-outline-secondary'
-                                ]) ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <?php ActiveForm::end(); ?>
-
                     <!-- Tabela de Requisições -->
                     <?php Pjax::begin(['timeout' => 5000, 'id' => 'requisicoes-pjax']); ?>
                     <?= GridView::widget([
@@ -194,6 +81,11 @@ $this->registerJs('
                                 'value' => function($model) {
                                     return Yii::$app->formatter->asDatetime($model->dataInicio, 'php:d/m/Y H:i');
                                 },
+                                'filter' => Html::activeTextInput($searchModel, 'dataInicio', [
+                                    'class' => 'form-control form-control-sm',
+                                    'type' => 'date',
+                                    'title' => 'Clique para selecionar data'
+                                ]),
                                 'headerOptions' => ['style' => 'width: 150px;'],
                             ],
                             [
@@ -201,6 +93,11 @@ $this->registerJs('
                                 'value' => function($model) {
                                     return $model->dataFim ? Yii::$app->formatter->asDatetime($model->dataFim, 'php:d/m/Y H:i') : '-';
                                 },
+                                'filter' => Html::activeTextInput($searchModel, 'dataFim', [
+                                    'class' => 'form-control form-control-sm',
+                                    'type' => 'date',
+                                    'title' => 'Clique para selecionar data'
+                                ]),
                                 'headerOptions' => ['style' => 'width: 150px;'],
                             ],
                             [
@@ -343,19 +240,50 @@ $this->registerJs('
                                 <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Cancelada</span>
                             </small>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <?= Html::a('<i class="fas fa-file-excel me-1"></i> Exportar Excel', ['export', 'format' => 'excel'], [
-                                'class' => 'btn btn-outline-success btn-sm'
-                            ]) ?>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+    <!-- SmallBox Widgets -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6">
+            <?= SmallBox::widget([
+                'title' => $totalRequisicoes ?? 0,
+                'text' => 'Total Requisições',
+                'icon' => 'fas fa-calendar-alt',
+                'theme' => 'info'
+            ]) ?>
+        </div>
+        <div class="col-lg-3 col-6">
+            <?= SmallBox::widget([
+                'title' => $requisicoesAtivas ?? 0,
+                'text' => 'Requisições Ativas',
+                'icon' => 'fas fa-play-circle',
+                'theme' => 'success'
+            ]) ?>
+        </div>
+        <div class="col-lg-3 col-6">
+            <?= SmallBox::widget([
+                'title' => $requisicoesConcluidas ?? 0,
+                'text' => 'Concluídas',
+                'icon' => 'fas fa-check-circle',
+                'theme' => 'secondary'
+            ]) ?>
+        </div>
+        <div class="col-lg-3 col-6">
+            <?= SmallBox::widget([
+                'title' => $requisicoesCanceladas ?? 0,
+                'text' => 'Canceladas',
+                'icon' => 'fas fa-times-circle',
+                'theme' => 'danger'
+            ]) ?>
+        </div>
+    </div>
 </div>
 
-<!-- CSS adicional -->
 <style>
     .table th {
         background-color: #f8f9fa;
@@ -376,31 +304,43 @@ $this->registerJs('
         font-size: 0.7em;
         font-weight: 500;
     }
-    .card-title {
-        font-weight: 600;
-    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Re-inicializar tooltips após Pjax
         $(document).on('pjax:success', function() {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                // Destruir tooltips antigos
                 var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
                 if (tooltip) {
                     tooltip.dispose();
                 }
-                // Criar novos tooltips
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+        });
+
+        // Converter datas do formato aaaa-mm-dd para dd/mm/aaaa
+        function formatDateForDisplay(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+            return dateStr;
+        }
+
+        // Quando o datepicker é fechado, converter para dd/mm/aaaa
+        $('input[type="date"]').on('change', function() {
+            if (this.value) {
+                // O valor já está no formato aaaa-mm-dd (padrão do datepicker)
+                // O backend vai converter automaticamente
+                console.log('Data selecionada:', this.value);
+            }
         });
     });
 </script>

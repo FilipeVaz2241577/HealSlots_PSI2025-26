@@ -36,19 +36,13 @@ if (YII_DEBUG) {
     }
 }
 
-// ... resto do código permanece igual ...
-
-$this->title = 'Detalhes da Sala: ' . $sala->nome;
-$this->params['breadcrumbs'][] = ['label' => 'Blocos', 'url' => ['site/blocos']];
-$this->params['breadcrumbs'][] = ['label' => $sala->bloco->nome, 'url' => ['site/salas', 'bloco' => $sala->bloco_id]];
-$this->params['breadcrumbs'][] = $this->title;
 
 // CORREÇÃO: Use todos os estados possíveis
 $coresEstadoSala = [
         'Livre' => 'success',
         'EmUso' => 'primary',        // ← USAR APENAS 'EmUso' PARA SALAS OCUPADAS
         'Manutencao' => 'warning',
-        'Inativa' => 'secondary',
+        'Desativada' => 'secondary', // ← Mudei de 'Inativa' para 'Desativada'
 ];
 
 // CORREÇÃO: Use as constantes para verificação
@@ -67,17 +61,6 @@ $estadoTextoSala = $sala->getEstadoLabel();
 // Verificar se a sala está disponível para reserva
 $disponivelParaReserva = $sala->isDisponivelParaReserva();
 
-// Buscar reservas ativas do usuário atual para esta sala
-$reservasAtivasUsuario = \common\models\Requisicao::find()
-        ->where([
-                'user_id' => Yii::$app->user->id,
-                'sala_id' => $sala->id,
-                'status' => \common\models\Requisicao::STATUS_ATIVA
-        ])
-        ->all();
-
-$temReservasAtivas = !empty($reservasAtivasUsuario);
-
 // Buscar última atualização
 $ultimaAtualizacao = $sala->updated_at ?? time();
 
@@ -91,6 +74,9 @@ foreach ($equipamentos as $equipamento) {
         $emManutencao++;
     }
 }
+
+// NOVO: Verificar se a sala está reservada (EmUso)
+$salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
 ?>
 
     <div class="site-detalhe-sala">
@@ -136,11 +122,11 @@ foreach ($equipamentos as $equipamento) {
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             <strong>Atenção:</strong> Esta sala não está disponível para reserva no momento. Estado atual: <?= $estadoTextoSala ?>
                         </div>
-                    <?php elseif ($sala->estado === \common\models\Sala::ESTADO_EM_USO): ?>
+                    <?php elseif ($salaReservada): ?>
                         <div class="alert alert-info mb-4">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Informação:</strong> Esta sala está atualmente marcada como <?= $estadoTextoSala ?>.
-                            Ainda pode ser possível fazer uma nova reserva se não houver conflitos de horário.
+                            <strong>Informação:</strong> Esta sala está atualmente <strong>RESERVADA (<?= $estadoTextoSala ?>)</strong>.
+                            Para solicitar manutenção, primeiro cancele a reserva.
                         </div>
                     <?php endif; ?>
 
@@ -320,9 +306,9 @@ foreach ($equipamentos as $equipamento) {
                                             $icon = 'check-circle';
                                         } elseif ($sala->estado === 'Manutencao') {
                                             $icon = 'tools';
-                                        } elseif (in_array($sala->estado, ['EmUso', 'Requisitada'])) {
+                                        } elseif ($sala->estado === 'EmUso') {
                                             $icon = 'user-clock';
-                                        } elseif ($sala->estado === 'Inativa') {
+                                        } elseif ($sala->estado === 'Desativada') {
                                             $icon = 'ban';
                                         }
                                         ?>
@@ -337,18 +323,18 @@ foreach ($equipamentos as $equipamento) {
                                                 Esta sala está atualmente em manutenção
                                             </small>
                                         </div>
-                                    <?php elseif (in_array($sala->estado, ['EmUso', 'Requisitada'])): ?>
+                                    <?php elseif ($salaReservada): ?>
                                         <div class="alert alert-primary">
                                             <small>
                                                 <i class="fas fa-user-clock me-1"></i>
-                                                Esta sala está atualmente em uso ou reservada
+                                                Esta sala está atualmente reservada/em uso
                                             </small>
                                         </div>
-                                    <?php elseif ($sala->estado === 'Inativa'): ?>
+                                    <?php elseif ($sala->estado === 'Desativada'): ?>
                                         <div class="alert alert-secondary">
                                             <small>
                                                 <i class="fas fa-ban me-1"></i>
-                                                Esta sala está inativa
+                                                Esta sala está desativada
                                             </small>
                                         </div>
                                     <?php else: ?>
@@ -396,8 +382,8 @@ foreach ($equipamentos as $equipamento) {
                                                     ['class' => 'btn btn-warning']) ?>
                                         <?php endif; ?>
 
-                                        <!-- BOTÃO RESERVAR SALA -->
-                                        <?php if ($disponivelParaReserva): ?>
+                                        <!-- BOTÃO RESERVAR SALA (DESABILITADO SE RESERVADA) -->
+                                        <?php if ($disponivelParaReserva && !$salaReservada): ?>
                                             <?= Html::a('<i class="fas fa-calendar-check me-2"></i> Reservar Sala',
                                                     ['site/reserva', 'id' => $sala->id],
                                                     ['class' => 'btn btn-success']) ?>
@@ -405,10 +391,13 @@ foreach ($equipamentos as $equipamento) {
                                             <button class="btn btn-success" disabled>
                                                 <i class="fas fa-calendar-times me-2"></i> Reservar Sala
                                             </button>
-                                            <small class="text-muted text-center">Não disponível para reserva</small>
+                                            <small class="text-muted text-center">
+                                                <?= $salaReservada ? 'Sala já reservada' : 'Não disponível para reserva' ?>
+                                            </small>
                                         <?php endif; ?>
 
-                                        <?php if ($sala->estado !== \common\models\Sala::ESTADO_MANUTENCAO): ?>
+                                        <!-- BOTÃO SOLICITAR MANUTENÇÃO (DESABILITADO SE RESERVADA) -->
+                                        <?php if (!$salaReservada && $sala->estado !== \common\models\Sala::ESTADO_MANUTENCAO): ?>
                                             <?= Html::a('<i class="fas fa-tools me-2"></i> Solicitar Manutenção',
                                                     ['site/solicitar-manutencao-sala', 'id' => $sala->id],
                                                     [
@@ -418,6 +407,13 @@ foreach ($equipamentos as $equipamento) {
                                                                     'method' => 'post',
                                                             ]
                                                     ]) ?>
+                                        <?php elseif ($salaReservada): ?>
+                                            <button class="btn btn-warning" disabled>
+                                                <i class="fas fa-tools me-2"></i> Solicitar Manutenção
+                                            </button>
+                                            <small class="text-muted text-center">
+                                                Cancele a reserva primeiro para solicitar manutenção
+                                            </small>
                                         <?php else: ?>
                                             <button class="btn btn-secondary" disabled>
                                                 <i class="fas fa-tools me-2"></i> Já em Manutenção
