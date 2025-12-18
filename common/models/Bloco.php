@@ -20,8 +20,7 @@ class Bloco extends \yii\db\ActiveRecord
      * ENUM field values
      */
     const ESTADO_ATIVO = 'ativo';
-    const ESTADO_INATIVO = 'inativo';
-    const ESTADO_MANUTENCAO = 'manutencao';
+    const ESTADO_DESATIVADO = 'desativado';
 
     /**
      * {@inheritdoc}
@@ -38,10 +37,12 @@ class Bloco extends \yii\db\ActiveRecord
     {
         return [
             [['estado'], 'default', 'value' => 'ativo'],
-            [['nome'], 'required'],
+            [['nome'], 'required', 'message' => 'O nome do bloco é obrigatório.'],
             [['estado'], 'string'],
-            [['nome'], 'string', 'max' => 100],
-            ['estado', 'in', 'range' => array_keys(self::optsEstado())],
+            [['nome'], 'string', 'max' => 100, 'tooLong' => 'O nome não pode exceder 100 caracteres.'],
+            ['estado', 'in', 'range' => array_keys(self::optsEstado()), 'message' => 'Estado inválido.'],
+            // Validação de unicidade
+            [['nome'], 'unique', 'message' => 'Já existe um bloco com este nome. Por favor, escolha outro nome.'],
         ];
     }
 
@@ -75,8 +76,7 @@ class Bloco extends \yii\db\ActiveRecord
     {
         return [
             self::ESTADO_ATIVO => 'Ativo',
-            self::ESTADO_INATIVO => 'Inativo',
-            self::ESTADO_MANUTENCAO => 'Manutenção',
+            self::ESTADO_DESATIVADO => 'Desativado',
         ];
     }
 
@@ -86,6 +86,36 @@ class Bloco extends \yii\db\ActiveRecord
     public function getEstadoLabel()
     {
         return self::optsEstado()[$this->estado] ?? 'Desconhecido';
+    }
+
+    /**
+     * Sobrescrevendo a validação beforeSave para garantir unicidade
+     */
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
+        // Verificar unicidade antes de salvar
+        if ($this->isNewRecord) {
+            $exists = self::find()->where(['nome' => $this->nome])->exists();
+            if ($exists) {
+                $this->addError('nome', 'Já existe um bloco com este nome.');
+                return false;
+            }
+        } else {
+            $exists = self::find()
+                ->where(['nome' => $this->nome])
+                ->andWhere(['!=', 'id', $this->id])
+                ->exists();
+            if ($exists) {
+                $this->addError('nome', 'Já existe um bloco com este nome.');
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -104,26 +134,14 @@ class Bloco extends \yii\db\ActiveRecord
     /**
      * @return bool
      */
-    public function isEstadoInativo()
+    public function isEstadoDesativado()
     {
-        return $this->estado === self::ESTADO_INATIVO;
+        return $this->estado === self::ESTADO_DESATIVADO;
     }
 
-    public function setEstadoToInativo()
+    public function setEstadoToDesativado()
     {
-        $this->estado = self::ESTADO_INATIVO;
+        $this->estado = self::ESTADO_DESATIVADO;
     }
 
-    /**
-     * @return bool
-     */
-    public function isEstadoManutencao()
-    {
-        return $this->estado === self::ESTADO_MANUTENCAO;
-    }
-
-    public function setEstadoToManutencao()
-    {
-        $this->estado = self::ESTADO_MANUTENCAO;
-    }
 }

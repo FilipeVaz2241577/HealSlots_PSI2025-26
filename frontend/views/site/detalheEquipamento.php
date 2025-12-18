@@ -168,52 +168,8 @@ $this->title = "Detalhes - " . Html::encode($equipamentoModel->equipamento);
                             </div>
                         </div>
 
-                        <!-- Sidebar com Estatísticas -->
+                        <!-- Sidebar -->
                         <div class="col-md-4">
-                            <!-- Estatísticas de Quantidade -->
-                            <div class="card mb-4">
-                                <div class="card-header bg-info text-white">
-                                    <h5 class="mb-0">Estatísticas do Tipo</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center mb-4">
-                                        <h2 class="text-primary"><?= $totalEquipamentos ?></h2>
-                                        <?php if (isset($equipamentoModel->tipoEquipamento)): ?>
-                                            <p class="text-muted mb-0">Total de Equipamentos (<?= Html::encode($equipamentoModel->tipoEquipamento->nome) ?>)</p>
-                                        <?php else: ?>
-                                            <p class="text-muted mb-0">Total de Equipamentos</p>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="row text-center">
-                                        <div class="col-6 mb-3">
-                                            <div class="border rounded p-3">
-                                                <h4 class="text-success"><?= $disponiveis ?></h4>
-                                                <small class="text-muted">Operacionais</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 mb-3">
-                                            <div class="border rounded p-3">
-                                                <h4 class="text-danger"><?= $emUso ?></h4>
-                                                <small class="text-muted">Em Uso</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="border rounded p-3">
-                                                <h4 class="text-warning"><?= $emManutencao ?></h4>
-                                                <small class="text-muted">Manutenção</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="border rounded p-3">
-                                                <h4 class="text-secondary"><?= $totalEquipamentos - ($disponiveis + $emUso + $emManutencao) ?></h4>
-                                                <small class="text-muted">Outros</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Gráfico de Distribuição (só se houver dados) -->
                             <?php if ($totalEquipamentos > 0): ?>
                                 <div class="card mb-4">
@@ -232,20 +188,26 @@ $this->title = "Detalhes - " . Html::encode($equipamentoModel->equipamento);
                                     <h5 class="mb-0">Ações Rápidas</h5>
                                 </div>
                                 <div class="card-body">
-                                    <?php if ($equipamentoModel->estado === 'Operacional'): ?>
-                                        <?= Html::a('<i class="fas fa-calendar-plus me-1"></i> Reservar',
-                                                ['#'], ['class' => 'btn btn-success w-100 mb-2']) ?>
+
+                                    <!-- BOTÃO SOLICITAR MANUTENÇÃO -->
+                                    <?php if ($equipamentoModel->estado !== \common\models\Equipamento::ESTADO_MANUTENCAO): ?>
+                                        <?= Html::a('<i class="fas fa-tools me-1"></i> Solicitar Manutenção',
+                                                ['site/solicitar-manutencao-equipamento', 'id' => $equipamentoModel->id],
+                                                [
+                                                        'class' => 'btn btn-warning w-100 mb-2',
+                                                        'data' => [
+                                                                'confirm' => 'Deseja solicitar manutenção para o equipamento ' . $equipamentoModel->equipamento . '?\n\nO equipamento será marcado como "Em Manutenção" e não estará disponível para uso.',
+                                                                'method' => 'post',
+                                                        ]
+                                                ]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary w-100 mb-2" disabled>
+                                            <i class="fas fa-tools me-1"></i> Já em Manutenção
+                                        </button>
                                     <?php endif; ?>
 
-                                    <?= Html::button('<i class="fas fa-tools me-1"></i> Solicitar Manutenção', [
-                                            'class' => 'btn btn-warning w-100 mb-2',
-                                            'id' => 'btn-solicitar-manutencao',
-                                            'data-equipamento-id' => $equipamentoModel->id,
-                                            'data-equipamento-nome' => $equipamentoModel->equipamento,
-                                    ]) ?>
-
                                     <?= Html::a('<i class="fas fa-exclamation-triangle me-1"></i> Reportar Problema',
-                                            ['site/suporte', 'assunto' => 'Problema com Equipamento: ' . $equipamentoModel->equipamento],
+                                            ['site/suporte', 'assunto' => 'Problema com o Equipamento: ' . $equipamentoModel->equipamento],
                                             ['class' => 'btn btn-danger w-100 mb-2']) ?>
 
                                     <?php if (Yii::$app->user->can('updateEquipment')): ?>
@@ -257,8 +219,6 @@ $this->title = "Detalhes - " . Html::encode($equipamentoModel->equipamento);
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -302,6 +262,16 @@ $this->title = "Detalhes - " . Html::encode($equipamentoModel->equipamento);
         .text-warning { color: #ffc107 !important; }
         .text-danger { color: #dc3545 !important; }
         .text-info { color: #17a2b8 !important; }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
     </style>
 
 <?php if ($totalEquipamentos > 0): ?>

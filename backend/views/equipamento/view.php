@@ -20,16 +20,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         <i class="fas fa-microscope me-2"></i>
                         Detalhes do Equipamento: <strong><?= Html::encode($model->numeroSerie) ?></strong>
                     </h3>
-                    <div class="card-tools">
-                        <?= Html::a('<i class="fas fa-edit me-1"></i> Editar', ['update', 'id' => $model->id], ['class' => 'btn btn-warning btn-sm']) ?>
-                        <?= Html::a('<i class="fas fa-trash me-1"></i> Eliminar', ['delete', 'id' => $model->id], [
-                            'class' => 'btn btn-danger btn-sm',
-                            'data' => [
-                                'confirm' => 'Tem a certeza que deseja eliminar este equipamento?',
-                                'method' => 'post',
-                            ],
-                        ]) ?>
-                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -97,8 +87,8 @@ $this->params['breadcrumbs'][] = $this->title;
                                 <?= Html::a('<i class="fas fa-edit me-1"></i> Editar', ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
                                 <?= Html::a('<i class="fas fa-trash me-1"></i> Eliminar', ['delete', 'id' => $model->id], [
                                     'class' => 'btn btn-danger',
+                                    'id' => 'delete-equipamento',
                                     'data' => [
-                                        'confirm' => '🚨 ELIMINAÇÃO DE EQUIPAMENTO 🚨\n\nTem a ABSOLUTA certeza que deseja eliminar PERMANENTEMENTE o equipamento:\n➤ ' . $model->numeroSerie . '\n\n▶️ Esta ação NÃO pode ser desfeita!\n▶️ Todos os dados do equipamento serão PERDIDOS!\n\nDigite "ELIMINAR" para confirmar:',
                                         'method' => 'post',
                                     ],
                                 ]) ?>
@@ -209,7 +199,6 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="d-grid gap-2">
                         <?= Html::a('<i class="fas fa-microscope me-2"></i> Ver Todos Equipamentos', ['index'], ['class' => 'btn btn-outline-primary btn-block text-left']) ?>
                         <?= Html::a('<i class="fas fa-plus me-2"></i> Novo Equipamento', ['create'], ['class' => 'btn btn-outline-success btn-block text-left']) ?>
-                        <?= Html::a('<i class="fas fa-door-open me-2"></i> Associar a Sala', ['/sala-equipamento/create', 'equipamento_id' => $model->id], ['class' => 'btn btn-outline-info btn-block text-left']) ?>
                     </div>
                 </div>
             </div>
@@ -241,10 +230,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Confirmação melhorada para eliminação
-        const deleteButtons = document.querySelectorAll('a.btn-danger[data-confirm]');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+        const deleteButton = document.getElementById('delete-equipamento');
+
+        if (deleteButton) {
+            deleteButton.addEventListener('click', function(e) {
+                e.preventDefault();
+
                 const equipamentoName = '<?= addslashes($model->numeroSerie) ?>';
                 const confirmationMessage = '🚨 ELIMINAÇÃO DE EQUIPAMENTO 🚨\n\n' +
                     'Tem a ABSOLUTA certeza que deseja eliminar PERMANENTEMENTE o equipamento:\n' +
@@ -255,13 +246,36 @@ $this->params['breadcrumbs'][] = $this->title;
                     'Digite "ELIMINAR" para confirmar:';
 
                 const userInput = prompt(confirmationMessage);
-                if (userInput !== 'ELIMINAR') {
-                    e.preventDefault();
-                    e.stopPropagation();
+                if (userInput === 'ELIMINAR') {
+                    // Criar um formulário oculto para enviar a requisição POST
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = this.href;
+
+                    // Adicionar CSRF token se necessário
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_csrf';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+                    }
+
+                    // Adicionar método spoofing para POST
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'post';
+                    form.appendChild(methodInput);
+
+                    // Adicionar ao corpo e submeter
+                    document.body.appendChild(form);
+                    form.submit();
+                } else {
                     alert('❌ Eliminação cancelada.');
-                    return false;
                 }
             });
-        });
+        }
     });
 </script>

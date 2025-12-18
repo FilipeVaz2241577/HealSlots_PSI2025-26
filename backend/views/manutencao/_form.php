@@ -7,13 +7,15 @@
 /** @var array $equipamentosList */
 /** @var array $salasList */
 /** @var int|null $equipamento_id */
+/** @var int|null $sala_id */
 
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 use common\models\Manutencao;
 
-// Garantir que a variável existe
+// Garantir que as variáveis existem
 $equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
+$sala_id = isset($sala_id) ? $sala_id : '';
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -31,17 +33,22 @@ $equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
         <h4 class="text-primary mb-3">
             <i class="fa fa-info-circle me-2"></i>Informações Básicas
         </h4>
+        <div class="alert alert-info">
+            <i class="fa fa-info-circle me-2"></i>
+            Selecione <strong>pelo menos um</strong>: equipamento OU sala.<br>
+            <small class="text-muted">Nota: Apenas são mostrados equipamentos/salas que não estão atualmente em manutenção.</small>
+        </div>
     </div>
 
     <div class="col-md-6">
         <?= $form->field($model, 'equipamento_id')
             ->dropDownList($equipamentosList, [
                 'class' => 'form-select form-select-lg',
-                'prompt' => '-- Selecione o equipamento --',
+                'prompt' => '-- Selecione o equipamento (opcional) --',
                 'id' => 'equipamento-select'
             ])
-            ->label('Equipamento <span class="text-danger">*</span>')
-            ->hint('Equipamento que necessita de manutenção', ['class' => 'form-text text-muted small'])
+            ->label('Equipamento')
+            ->hint('Equipamento disponível para manutenção (opcional)', ['class' => 'form-text text-muted small'])
         ?>
     </div>
 
@@ -49,11 +56,11 @@ $equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
         <?= $form->field($model, 'sala_id')
             ->dropDownList($salasList, [
                 'class' => 'form-select form-select-lg',
-                'prompt' => '-- Selecione a sala --',
+                'prompt' => '-- Selecione a sala (opcional) --',
                 'id' => 'sala-select'
             ])
-            ->label('Sala (Opcional)')
-            ->hint('Sala onde se encontra o equipamento (se aplicável)', ['class' => 'form-text text-muted small'])
+            ->label('Sala')
+            ->hint('Sala disponível para manutenção (opcional)', ['class' => 'form-text text-muted small'])
         ?>
     </div>
 </div>
@@ -99,7 +106,7 @@ $equipamento_id = isset($equipamento_id) ? $equipamento_id : '';
     <div class="col-12">
         <h4 class="text-primary mb-3">
             <i class="fa fa-cogs me-2"></i>Detalhes
-            </h4>
+        </h4>
     </div>
 
     <div class="col-md-4">
@@ -183,6 +190,25 @@ $(document).ready(function() {
         });
     }
     
+    // Se vier de uma sala, seleciona automaticamente
+    var salaId = '$sala_id';
+    if (salaId && salaId !== '') {
+        $('#sala-select').val(salaId);
+        
+        // Preenche a descrição para sala
+        var descricaoAtual = $('#descricao-textarea').val();
+        if (!descricaoAtual) {
+            var novaDescricao = 'MANUTENÇÃO DA SALA:\\n';
+            novaDescricao += '------------------------------\\n';
+            novaDescricao += 'Sala: [Nome da Sala]\\n';
+            novaDescricao += 'Bloco: [Nome do Bloco]\\n';
+            novaDescricao += '\\nDESCRIÇÃO DA MANUTENÇÃO:\\n';
+            novaDescricao += '------------------------------\\n';
+            novaDescricao += 'Descreva aqui os trabalhos a realizar na sala...';
+            $('#descricao-textarea').val(novaDescricao);
+        }
+    }
+    
     // Quando o equipamento é alterado, busca sua sala atual
     $('#equipamento-select').change(function() {
         var equipId = $(this).val();
@@ -195,6 +221,20 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+    
+    // Validação: Pelo menos um campo preenchido
+    $('#manutencao-form').on('submit', function(e) {
+        var equipamento = $('#equipamento-select').val();
+        var sala = $('#sala-select').val();
+        
+        if (!equipamento && !sala) {
+            e.preventDefault();
+            alert('Erro: Deve selecionar pelo menos um equipamento OU uma sala.');
+            return false;
+        }
+        
+        return true;
     });
 });
 JS;

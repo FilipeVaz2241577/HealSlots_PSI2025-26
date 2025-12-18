@@ -56,9 +56,17 @@ class BlocoController extends Controller
     {
         $model = new Bloco();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Bloco criado com sucesso!');
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($model->load(Yii::$app->request->post())) {
+            // Validar antes de salvar
+            if ($model->validate() && $model->save()) {
+                Yii::$app->session->setFlash('success', 'Bloco criado com sucesso!');
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else {
+                // Se houver erro de unicidade, mostrar mensagem
+                if ($model->hasErrors('nome')) {
+                    Yii::$app->session->setFlash('error', $model->getFirstError('nome'));
+                }
+            }
         }
 
         return $this->render('create', [
@@ -70,9 +78,17 @@ class BlocoController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Bloco atualizado com sucesso!');
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($model->load(Yii::$app->request->post())) {
+            // Validar antes de salvar
+            if ($model->validate() && $model->save()) {
+                Yii::$app->session->setFlash('success', 'Bloco atualizado com sucesso!');
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else {
+                // Se houver erro de unicidade, mostrar mensagem
+                if ($model->hasErrors('nome')) {
+                    Yii::$app->session->setFlash('error', $model->getFirstError('nome'));
+                }
+            }
         }
 
         return $this->render('update', [

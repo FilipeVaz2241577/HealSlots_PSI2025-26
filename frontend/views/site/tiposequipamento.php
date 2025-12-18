@@ -93,10 +93,10 @@ foreach ($tiposEquipamento as $tipo) {
                         <div class="col-12 text-center py-5">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                             <h4 class="text-muted">
-                                <?= $search ? 'Nenhum tipo de equipamento encontrado para "' . Html::encode($search) . '"' : 'Nenhum tipo de equipamento cadastrado' ?>
+                                <?= $search ? 'Nenhum tipo de equipamento encontrado como "' . Html::encode($search) . '"' : 'Nenhum tipo de equipamento cadastrado' ?>
                             </h4>
                             <?php if ($search): ?>
-                                <p class="text-muted">Tente pesquisar com outros termos</p>
+                                <p class="text-muted">Tente pesquisar com outros filtros</p>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
@@ -267,24 +267,53 @@ foreach ($tiposEquipamento as $tipo) {
             border-radius: 0 8px 8px 0;
         }
 
-        .btn-outline-primary {
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
+        /* Campos de pesquisa iguais */
+        .search-form .form-control {
+            border-radius: 8px 0 0 8px;
+            border-right: 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #495057;
+            padding: 0.75rem 1rem;
         }
 
-        .btn-outline-primary:hover {
-            background-color: #007bff;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        .search-form .form-control::placeholder {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #6c757d;
+            opacity: 0.7;
         }
 
+        /* Estilo unificado para os botões de pesquisa */
+        .search-form .btn-primary {
+            border-radius: 0 8px 8px 0;
+            padding: 0 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            height: auto;
+            display: flex; /* Adicionar isso */
+            align-items: center; /* Adicionar isso */
+            justify-content: center; /* Adicionar isso */
+        }
+
+        /* Botão de limpar */
+        .search-form .btn-outline-secondary {
+            border-radius: 8px;
+            margin-left: 5px;
+            padding: 0 18px;
+            font-size: 1.1rem;
+            height: auto;
+            display: flex; /* Adicionar isso */
+            align-items: center; /* Adicionar isso */
+            justify-content: center; /* Adicionar isso */
+        }
+
+        /* REMOVER esta linha duplicada (linha 154-156):
         .search-form .btn-outline-secondary {
             border-radius: 8px;
             margin-left: 5px;
         }
+        */
 
         .progress {
             background-color: #e9ecef;

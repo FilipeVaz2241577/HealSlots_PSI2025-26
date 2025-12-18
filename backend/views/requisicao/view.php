@@ -184,10 +184,6 @@ $salaEstado = $model->sala ? ($salaEstadoBadge[$model->sala->estado] ?? '<span c
                                                 ]) ?>
                                             <?php endif; ?>
 
-                                            <?= Html::a('<i class="fas fa-print me-2"></i>Imprimir', ['#'], [
-                                                'class' => 'btn btn-secondary btn-block text-left w-100',
-                                                'onclick' => 'window.print(); return false;'
-                                            ]) ?>
                                         </div>
                                     </div>
                                 </div>

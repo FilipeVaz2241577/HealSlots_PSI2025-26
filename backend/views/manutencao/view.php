@@ -161,7 +161,7 @@ if ($model->equipamento) {
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <?php if ($model->status === \common\models\Manutencao::STATUS_PENDENTE): ?>
-                            <?= Html::a('<i class="fas fa-play"></i> Iniciar Manutenção', ['iniciar-manutencao', 'id' => $model->id], [
+                            <?= Html::a('<i class="fas fa-play"></i> Iniciar Manutenção', ['iniciar', 'id' => $model->id], [
                                 'class' => 'btn btn-success',
                                 'data' => [
                                     'confirm' => 'Deseja iniciar esta manutenção?',
@@ -169,7 +169,7 @@ if ($model->equipamento) {
                                 ],
                             ]) ?>
                         <?php elseif ($model->status === \common\models\Manutencao::STATUS_EM_CURSO && !$model->dataFim): ?>
-                            <?= Html::a('<i class="fas fa-check"></i> Concluir Manutenção', ['concluir-manutencao', 'id' => $model->id], [
+                            <?= Html::a('<i class="fas fa-check"></i> Concluir Manutenção', ['concluir', 'id' => $model->id], [
                                 'class' => 'btn btn-primary',
                                 'data' => [
                                     'confirm' => 'Deseja marcar esta manutenção como concluída?',
@@ -183,11 +183,6 @@ if ($model->equipamento) {
                                 'class' => 'btn btn-outline-info',
                             ]) ?>
                         <?php endif; ?>
-
-                        <?= Html::a('<i class="fas fa-print"></i> Imprimir Relatório', ['relatorio', 'id' => $model->id], [
-                            'class' => 'btn btn-outline-secondary',
-                            'target' => '_blank',
-                        ]) ?>
                     </div>
                 </div>
             </div>

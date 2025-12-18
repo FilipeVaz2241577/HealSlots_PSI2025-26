@@ -33,7 +33,9 @@ $this->params['breadcrumbs'][] = $this->title;
                         'options' => ['class' => 'mb-4'],
                         'inputOptions' => ['class' => 'form-control form-control-lg'],
                         'labelOptions' => ['class' => 'form-label fw-bold text-dark'],
+                        'hintOptions' => ['class' => 'form-text text-muted small'],
                     ],
+                    'enableAjaxValidation' => false, // Desativar validação AJAX se estiver causando problemas
                 ]); ?>
 
                 <!-- Informações do Bloco -->
@@ -48,10 +50,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         <?= $form->field($model, 'nome')
                             ->textInput([
                                 'maxlength' => true,
-                                'placeholder' => 'ex: Bloco A - Cirurgia Geral'
+                                'placeholder' => 'ex: Bloco A - Cirurgia Geral',
+                                'autocomplete' => 'off' // Adicionar para evitar preenchimento automático
                             ])
                             ->label('Nome do Bloco <span class="text-danger">*</span>')
-                            ->hint('Nome descritivo para identificação do bloco', ['class' => 'form-text text-muted small'])
+                            ->hint('O nome do bloco deve ser único. Verifique se não existe outro bloco com o mesmo nome.', ['class' => 'form-text text-muted small'])
                         ?>
                     </div>
 

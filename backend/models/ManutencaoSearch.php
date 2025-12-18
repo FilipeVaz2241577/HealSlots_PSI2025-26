@@ -72,24 +72,24 @@ class ManutencaoSearch extends Manutencao
         }
 
         $query->andFilterWhere([
-            'id' => $this->id,
-            'equipamento_id' => $this->equipamento_id,
-            'user_id' => $this->user_id,
-            'sala_id' => $this->sala_id,
-            'status' => $this->status,
+            'manutencao.id' => $this->id, // Especificar tabela para id também
+            'manutencao.equipamento_id' => $this->equipamento_id,
+            'manutencao.user_id' => $this->user_id,
+            'manutencao.sala_id' => $this->sala_id,
+            'manutencao.status' => $this->status, // ← CORREÇÃO AQUI
         ]);
 
-        $query->andFilterWhere(['like', 'descricao', $this->descricao])
+        $query->andFilterWhere(['like', 'manutencao.descricao', $this->descricao])
             ->andFilterWhere(['like', 'equipamento.equipamento', $this->equipamentoNome])
             ->andFilterWhere(['like', 'user.username', $this->userNome])
             ->andFilterWhere(['like', 'sala.nome', $this->salaNome]);
 
         if ($this->dataInicio) {
-            $query->andFilterWhere(['>=', 'dataInicio', $this->dataInicio]);
+            $query->andFilterWhere(['>=', 'manutencao.dataInicio', $this->dataInicio]); // Especificar tabela
         }
 
         if ($this->dataFim) {
-            $query->andFilterWhere(['>=', 'dataFim', $this->dataFim]);
+            $query->andFilterWhere(['>=', 'manutencao.dataFim', $this->dataFim]); // Especificar tabela
         }
 
         return $dataProvider;

@@ -102,6 +102,16 @@ class Requisicao extends \yii\db\ActiveRecord
     }
 
     /**
+     * Gets query for [[IdEquipamentos]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdEquipamentos()
+    {
+        return $this->hasMany(Equipamento::class, ['id' => 'idEquipamento'])->viaTable('requisicao_equipamento', ['idRequisicao' => 'id']);
+    }
+
+    /**
      * Gets query for [[RequisicaoEquipamentos]].
      *
      * @return \yii\db\ActiveQuery

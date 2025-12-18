@@ -95,8 +95,8 @@ class Sala extends ActiveRecord
     {
         return [
             self::ESTADO_LIVRE => 'Livre',
-            self::ESTADO_EM_USO => 'Em Uso',
-            self::ESTADO_MANUTENCAO => 'Manutenção',
+            self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
+            self::ESTADO_MANUTENCAO => 'Em Manutenção',
             self::ESTADO_DESATIVADA => 'Desativada',
         ];
     }
@@ -106,7 +106,22 @@ class Sala extends ActiveRecord
      */
     public function getEstadoLabel()
     {
-        return self::optsEstado()[$this->estado] ?? 'Desconhecido';
+        $opts = self::optsEstado();
+
+        // Verificar exatamente o valor armazenado
+        if (isset($opts[$this->estado])) {
+            return $opts[$this->estado];
+        }
+
+        // Se não encontrar, verificar case-insensitive
+        $estadoLower = strtolower($this->estado);
+        foreach ($opts as $key => $label) {
+            if (strtolower($key) === $estadoLower) {
+                return $label;
+            }
+        }
+
+        return 'Desconhecido (' . $this->estado . ')';
     }
 
     /**
@@ -162,6 +177,18 @@ class Sala extends ActiveRecord
     }
 
     /**
+     * Verifica se a sala está disponível para reserva
+     * @return bool
+     */
+    public function isDisponivelParaReserva()
+    {
+        return in_array($this->estado, [
+            self::ESTADO_LIVRE,
+            self::ESTADO_EM_USO  // Sala ainda pode ser reservada mesmo se já estiver em uso
+        ]);
+    }
+
+    /**
      * Get all salas count by estado
      */
     public static function getCountByEstado()
@@ -213,7 +240,7 @@ class Sala extends ActiveRecord
     public function getEquipamentos()
     {
         return $this->hasMany(Equipamento::class, ['id' => 'idEquipamento'])
-            ->via('salaEquipamentos');
+            ->viaTable('sala_equipamento', ['idSala' => 'id']);
     }
 
     /**
@@ -222,5 +249,19 @@ class Sala extends ActiveRecord
     public function getSalaEquipamentos()
     {
         return $this->hasMany(SalaEquipamento::class, ['idSala' => 'id']);
+    }
+
+    /**
+     * Debug method to check state
+     */
+    public function debugEstado()
+    {
+        return [
+            'estado' => $this->estado,
+            'constante_EM_USO' => self::ESTADO_EM_USO,
+            'getEstadoLabel' => $this->getEstadoLabel(),
+            'optsEstado' => self::optsEstado(),
+            'estado_in_opts' => isset(self::optsEstado()[$this->estado]),
+        ];
     }
 }

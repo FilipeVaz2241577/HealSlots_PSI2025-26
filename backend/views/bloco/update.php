@@ -35,7 +35,7 @@ $this->params['breadcrumbs'][] = 'Atualizar';
                         <div class="alert alert-warning">
                             <h6><i class="fas fa-exclamation-triangle me-2"></i>Atenção</h6>
                             <p class="mb-0">
-                                Ao alterar o estado do bloco para <strong>"Inativo"</strong> ou <strong>"Em Manutenção"</strong>,
+                                Ao alterar o estado do bloco para <strong>"Inativo"</strong>
                                 todas as salas deste bloco ficarão indisponíveis para requisições.
                             </p>
                         </div>
@@ -92,27 +92,6 @@ $this->params['breadcrumbs'][] = 'Atualizar';
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-times-circle"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="small-box bg-warning">
-                                    <div class="inner">
-                                        <h3>
-                                            <?php
-                                            $manutencao = 0;
-                                            if ($model->salas) {
-                                                foreach ($model->salas as $sala) {
-                                                    if ($sala->estado === 'Em Manutencao') $manutencao++;
-                                                }
-                                            }
-                                            echo $manutencao;
-                                            ?>
-                                        </h3>
-                                        <p>Em Manutenção</p>
-                                    </div>
-                                    <div class="icon">
-                                        <i class="fas fa-tools"></i>
                                     </div>
                                 </div>
                             </div>
