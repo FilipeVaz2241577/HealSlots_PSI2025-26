@@ -6,7 +6,6 @@
 /** @var int $totalBlocos */
 /** @var int $totalSalas */
 /** @var int $blocosAtivos */
-/** @var int $blocosManutencao */
 /** @var int $blocosDesativados */
 /** @var int $blocosUso */
 
@@ -20,8 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
 // Mapear cores para estados (usando os métodos do modelo)
 $coresEstado = [
         \common\models\Bloco::ESTADO_ATIVO => 'success',
-        \common\models\Bloco::ESTADO_DESATIVADO => 'secondary',
-        \common\models\Bloco::ESTADO_MANUTENCAO => 'warning',
+        \common\models\Bloco::ESTADO_DESATIVADO => 'secondary'
 ];
 ?>
 
@@ -118,13 +116,11 @@ $coresEstado = [
                                             <?php
                                             $salasLivres = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_LIVRE])->count();
                                             $salasEmUso = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_EM_USO])->count();
-                                            $salasManutencao = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_MANUTENCAO])->count();
                                             $salasDesativadas = $bloco->getSalas()->where(['estado' => \common\models\Sala::ESTADO_DESATIVADA])->count(); // ATUALIZADO
                                             ?>
                                             <small class="text-muted">
                                                 <span class="text-success"><?= $salasLivres ?> Livres</span> |
                                                 <span class="text-danger"><?= $salasEmUso ?> Em Uso</span><br>
-                                                <span class="text-warning"><?= $salasManutencao ?> Manutenção</span> |
                                                 <span class="text-secondary"><?= $salasDesativadas ?> Desativadas</span> <!-- ATUALIZADO -->
                                             </small>
                                         </p>
@@ -172,10 +168,6 @@ $coresEstado = [
                                     <li>
                                         <span class="badge bg-success me-2">&nbsp;</span>
                                         <strong><?= $blocosAtivos ?></strong> bloco(s) ativo(s)
-                                    </li>
-                                    <li>
-                                        <span class="badge bg-warning me-2">&nbsp;</span>
-                                        <strong><?= $blocosManutencao ?></strong> bloco(s) em manutenção
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>
