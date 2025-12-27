@@ -20,16 +20,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         <i class="fas fa-door-open me-2"></i>
                         Detalhes da Sala: <strong><?= Html::encode($model->nome) ?></strong>
                     </h3>
-                    <div class="card-tools">
-                        <?= Html::a('<i class="fas fa-edit me-1"></i> Editar', ['update', 'id' => $model->id], ['class' => 'btn btn-warning btn-sm']) ?>
-                        <?= Html::a('<i class="fas fa-trash me-1"></i> Eliminar', ['delete', 'id' => $model->id], [
-                            'class' => 'btn btn-danger btn-sm',
-                            'data' => [
-                                'confirm' => 'Tem a certeza que deseja eliminar esta sala?',
-                                'method' => 'post',
-                            ],
-                        ]) ?>
-                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">

@@ -41,26 +41,6 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
                 <div class="card-body">
 
-                    <!-- Formulário de Pesquisa -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <?php $form = ActiveForm::begin([
-                                'method' => 'get',
-                                'action' => ['index'],
-                            ]); ?>
-
-                            <div class="input-group input-group-sm">
-                                <?= Html::textInput('BlocoSearch[nome]', $searchModel->nome ?? '', [
-                                    'class' => 'form-control',
-                                    'placeholder' => 'Pesquisar por nome do bloco...'
-                                ]) ?>
-                                <?= Html::submitButton('<i class="fas fa-search"></i> Pesquisar', ['class' => 'btn btn-primary']) ?>
-                                <?= Html::a('<i class="fas fa-redo"></i>', ['index'], ['class' => 'btn btn-outline-secondary']) ?>
-                            </div>
-
-                            <?php ActiveForm::end(); ?>
-                        </div>
-                    </div>
 
                     <!-- Tabela CRUD -->
                     <?php Pjax::begin(['timeout' => 5000]); ?>
@@ -248,7 +228,6 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                                 <i class="fas fa-info-circle me-1"></i>Legenda:
                                 <span class="badge bg-success me-1"><i class="fas fa-check-circle me-1"></i>Ativo</span>
                                 <span class="badge bg-secondary me-1"><i class="fas fa-times-circle me-1"></i>Inativo</span>
-                                <span class="badge bg-warning"><i class="fas fa-tools me-1"></i>Manutenção</span>
                             </small>
                         </div>
                         <div class="col-md-6 text-end">

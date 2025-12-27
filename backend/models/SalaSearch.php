@@ -25,18 +25,18 @@ class SalaSearch extends Sala
 
     public function search($params)
     {
-        $query = Sala::find()->joinWith(['bloco']);
+        // Query SIMPLES sem alias - vamos evitar complexidade
+        $query = Sala::find();
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['defaultOrder' => ['nome' => SORT_ASC]]
+            'sort' => [
+                'defaultOrder' => ['nome' => SORT_ASC],
+            ],
+            'pagination' => [
+                'pageSize' => 20,
+            ],
         ]);
-
-        // Configurar ordenação para bloco name
-        $dataProvider->sort->attributes['blocoName'] = [
-            'asc' => ['bloco.nome' => SORT_ASC],
-            'desc' => ['bloco.nome' => SORT_DESC],
-        ];
 
         $this->load($params);
 
@@ -44,14 +44,20 @@ class SalaSearch extends Sala
             return $dataProvider;
         }
 
+        // Filtros básicos
         $query->andFilterWhere([
-            'sala.id' => $this->id,
+            'id' => $this->id,
             'bloco_id' => $this->bloco_id,
             'estado' => $this->estado,
         ]);
 
-        $query->andFilterWhere(['like', 'sala.nome', $this->nome])
-            ->andFilterWhere(['like', 'bloco.nome', $this->blocoName]);
+        $query->andFilterWhere(['like', 'nome', $this->nome]);
+
+        // Se precisar filtrar por nome do bloco, adicionar o JOIN apenas aqui
+        if (!empty($this->blocoName)) {
+            $query->joinWith(['bloco']);
+            $query->andFilterWhere(['like', 'bloco.nome', $this->blocoName]);
+        }
 
         return $dataProvider;
     }

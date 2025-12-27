@@ -38,26 +38,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
                 <div class="card-body">
 
-                    <!-- Formulário de Pesquisa -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <?php $form = ActiveForm::begin([
-                                'method' => 'get',
-                                'action' => ['index'],
-                            ]); ?>
 
-                            <div class="input-group input-group-sm">
-                                <?= Html::textInput('EquipamentoSearch[search]', $searchModel->search ?? '', [
-                                    'class' => 'form-control',
-                                    'placeholder' => 'Pesquisar por equipamento, número de série...'
-                                ]) ?>
-                                <?= Html::submitButton('<i class="fas fa-search"></i> Pesquisar', ['class' => 'btn btn-primary']) ?>
-                                <?= Html::a('<i class="fas fa-redo"></i>', ['index'], ['class' => 'btn btn-outline-secondary']) ?>
-                            </div>
-
-                            <?php ActiveForm::end(); ?>
-                        </div>
-                    </div>
 
                     <!-- Tabela CRUD -->
                     <?php Pjax::begin(); ?>

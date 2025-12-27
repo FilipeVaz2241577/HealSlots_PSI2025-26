@@ -29,6 +29,8 @@ class SiteController extends Controller
     /**
      * {@inheritdoc}
      */
+    // NO SiteController.php, no array de behaviors, adicione 'cancelar-reserva':
+
     public function behaviors()
     {
         return [
@@ -36,11 +38,11 @@ class SiteController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email', 'suporte', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'],
+                        'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email', 'suporte', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'], // ADICIONE AS NOVAS AÇÕES
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'],
+                        'actions' => ['logout', 'index', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'], // ADICIONE AS NOVAS AÇÕES
                         'allow' => true,
                         'roles' => ['frontOfficeAccess'],
                     ],
@@ -55,7 +57,7 @@ class SiteController extends Controller
                     'remove-all-equipamentos' => ['post'],
                     'solicitar-manutencao' => ['post'],
                     'solicitar-manutencao-sala' => ['post'],
-                    'solicitar-manutencao-equipamento' => ['post'],
+                    'solicitar-manutencao-equipamento' => ['post'],// ← ADICIONE AQUI
                 ],
             ],
         ];
@@ -89,8 +91,8 @@ class SiteController extends Controller
             return $this->redirect(['site/login']);
         }
 
-        // Se estiver logado, redireciona para tiposequipamento
-        return $this->redirect(['site/tiposequipamento']);
+        // Se estiver logado, mostra a página index normal
+        return $this->render('index');
     }
 
     /**
@@ -102,10 +104,12 @@ class SiteController extends Controller
     {
         $model = new ContactForm();
 
+        // Pré-preencher o assunto se foi passado como parâmetro
         if ($assunto) {
             $model->subject = $assunto;
         }
 
+        // Adicionar número de série ao corpo se foi passado
         if ($nserie) {
             $model->body = "Número de Série do equipamento: $nserie\n\n";
         }
@@ -165,6 +169,10 @@ class SiteController extends Controller
     /**
      * Mostra as salas de um bloco específico
      */
+    /**
+     * Gestão de Blocos (TecnicoSaude e Admin)
+     */
+
     public function actionBlocos()
     {
         if (!Yii::$app->user->can('manageRooms')) {
@@ -173,6 +181,7 @@ class SiteController extends Controller
 
         $search = Yii::$app->request->get('search');
 
+        // Buscar blocos
         $query = \common\models\Bloco::find()
             ->with(['salas'])
             ->orderBy(['nome' => SORT_ASC]);
@@ -183,12 +192,13 @@ class SiteController extends Controller
 
         $blocos = $query->all();
 
+        // Calcular estatísticas usando os métodos do modelo
         $totalBlocos = count($blocos);
         $totalSalas = 0;
         $blocosAtivos = 0;
         $blocosManutencao = 0;
         $blocosDesativados = 0;
-        $blocosUso = 0;
+        $blocosUso = 0; // VARIÁVEL ADICIONADA AQUI
 
         foreach ($blocos as $bloco) {
             $totalSalas += $bloco->getSalas()->count();
@@ -199,7 +209,7 @@ class SiteController extends Controller
                 $blocosManutencao++;
             } elseif ($bloco->isEstadoDesativado()) {
                 $blocosDesativados++;
-            } elseif ($bloco->isEstadoUso()) {
+            } elseif ($bloco->isEstadoUso()) { // VERIFICAÇÃO ADICIONADA AQUI
                 $blocosUso++;
             }
         }
@@ -212,7 +222,7 @@ class SiteController extends Controller
             'blocosAtivos' => $blocosAtivos,
             'blocosManutencao' => $blocosManutencao,
             'blocosDesativados' => $blocosDesativados,
-            'blocosUso' => $blocosUso,
+            'blocosUso' => $blocosUso, // VARIÁVEL PASSADA PARA A VIEW AQUI
         ]);
     }
 
@@ -225,6 +235,7 @@ class SiteController extends Controller
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar salas.');
         }
 
+        // Se não especificar um bloco, mostrar todas as salas
         $blocoModel = $bloco ? \common\models\Bloco::findOne($bloco) : null;
 
         $query = \common\models\Sala::find()
@@ -242,6 +253,7 @@ class SiteController extends Controller
             ]);
         }
 
+        // Filtro por estado
         $estadoFiltro = Yii::$app->request->get('estado');
         if ($estadoFiltro && in_array($estadoFiltro, array_keys(\common\models\Sala::optsEstado()))) {
             $query->andWhere(['estado' => $estadoFiltro]);
@@ -249,6 +261,7 @@ class SiteController extends Controller
 
         $salas = $query->all();
 
+        // Contar por estado para estatísticas
         $contagemPorEstado = [];
         $estados = array_keys(\common\models\Sala::optsEstado());
 
@@ -260,6 +273,7 @@ class SiteController extends Controller
             $contagemPorEstado[$estado] = $queryCount->count();
         }
 
+        // Buscar todos os blocos para o dropdown
         $todosBlocos = \common\models\Bloco::find()
             ->orderBy(['nome' => SORT_ASC])
             ->all();
@@ -289,6 +303,7 @@ class SiteController extends Controller
             throw new \yii\web\NotFoundHttpException('Sala não encontrada.');
         }
 
+        // Buscar equipamentos da sala usando a relação via SalaEquipamento
         $equipamentos = \common\models\Equipamento::find()
             ->joinWith(['tipoEquipamento'])
             ->innerJoin('sala_equipamento', 'equipamento.id = sala_equipamento.idEquipamento')
@@ -304,6 +319,9 @@ class SiteController extends Controller
     /**
      * Página de Tipos de Equipamento
      */
+    /**
+     * Página de Tipos de Equipamento
+     */
     public function actionTiposequipamento()
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
@@ -312,6 +330,7 @@ class SiteController extends Controller
 
         $search = Yii::$app->request->get('search');
 
+        // Buscar tipos de equipamento usando o modelo do common
         $query = \common\models\TipoEquipamento::find()
             ->select([
                 'tipoEquipamento.*',
@@ -322,7 +341,7 @@ class SiteController extends Controller
             ])
             ->leftJoin('equipamento', 'equipamento.tipoEquipamento_id = tipoEquipamento.id')
             ->groupBy('tipoEquipamento.id')
-            ->orderBy(['tipoEquipamento.id' => SORT_ASC]);
+            ->orderBy(['tipoEquipamento.id' => SORT_ASC]); // <-- ORDENAÇÃO PELO ID
 
         if ($search) {
             $query->where(['like', 'tipoEquipamento.nome', $search]);
@@ -339,27 +358,38 @@ class SiteController extends Controller
     /**
      * Mostra os equipamentos de uma categoria específica
      */
+
+    /**
+     * Mostra os equipamentos de uma categoria específica
+     */
+    /**
+     * Mostra os equipamentos de uma categoria específica
+     */
     public function actionEquipamentos($tipo = null)
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar equipamentos.');
         }
 
+        // Buscar tipo de equipamento
         $tipoEquipamento = $tipo ? \common\models\TipoEquipamento::findOne($tipo) : null;
 
         if (!$tipoEquipamento) {
             throw new \yii\web\NotFoundHttpException('Tipo de equipamento não encontrado.');
         }
 
+        // Buscar equipamentos deste tipo
         $query = \common\models\Equipamento::find()
             ->with(['tipoEquipamento', 'salas'])
             ->where(['tipoEquipamento_id' => $tipo]);
 
+        // Filtro por estado
         $estadoFiltro = Yii::$app->request->get('estado');
         if ($estadoFiltro && in_array($estadoFiltro, ['Operacional', 'Em Manutenção', 'Em Uso'])) {
             $query->andWhere(['estado' => $estadoFiltro]);
         }
 
+        // Filtro por pesquisa de texto
         $search = Yii::$app->request->get('search');
         if ($search) {
             $query->andWhere(['or',
@@ -368,6 +398,7 @@ class SiteController extends Controller
             ]);
         }
 
+        // Ordenação
         $sort = Yii::$app->request->get('sort', 'equipamento');
         $order = Yii::$app->request->get('order', 'asc');
 
@@ -382,20 +413,25 @@ class SiteController extends Controller
 
         $equipamentos = $query->all();
 
+        // CORREÇÃO: Contar por estado para estatísticas - usando createCommand para garantir resultado correto
         $contagemPorEstado = [];
 
+        // Primeiro, contar totais (sem filtros)
         $contagemQuery = \common\models\Equipamento::find()
             ->select(['estado', 'COUNT(*) as count'])
             ->where(['tipoEquipamento_id' => $tipo])
             ->groupBy(['estado']);
 
+        // Usar createCommand para obter resultados brutos
         $command = $contagemQuery->createCommand();
         $resultados = $command->queryAll();
 
+        // Transformar em array indexado por estado
         foreach ($resultados as $resultado) {
             $contagemPorEstado[$resultado['estado']] = (int) $resultado['count'];
         }
 
+        // Garantir que todos os estados existam no array
         $estadosPossiveis = ['Operacional', 'Em Manutenção', 'Em Uso'];
         foreach ($estadosPossiveis as $estado) {
             if (!isset($contagemPorEstado[$estado])) {
@@ -403,16 +439,21 @@ class SiteController extends Controller
             }
         }
 
+        // Mapear tipos para categorias
         $mapeamentoTiposParaCategorias = [
-            1 => 'moveis',
-            2 => 'monitorizacao',
-            3 => 'cirurgicos',
-            4 => 'consumo'
+            1 => 'moveis',           // Equipamentos Móveis
+            2 => 'monitorizacao',    // Equipamentos de Monitorização
+            3 => 'cirurgicos',       // Instrumentos Cirúrgicos
+            4 => 'consumo'           // Materiais de Consumo
         ];
 
         $categoria = isset($mapeamentoTiposParaCategorias[$tipo])
             ? $mapeamentoTiposParaCategorias[$tipo]
             : null;
+
+        // DEBUG: Adicionar temporariamente para verificar
+        Yii::debug('contagemPorEstado: ' . print_r($contagemPorEstado, true), 'equipamentos');
+        Yii::debug('equipamentos encontrados: ' . count($equipamentos), 'equipamentos');
 
         return $this->render('equipamentos', [
             'tipoEquipamento' => $tipoEquipamento,
@@ -429,6 +470,9 @@ class SiteController extends Controller
     /**
      * Mostra os detalhes de um equipamento específico
      */
+    /**
+     * Mostra os detalhes de um equipamento específico
+     */
     public function actionDetalheEquipamento($id)
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
@@ -441,6 +485,7 @@ class SiteController extends Controller
             throw new \yii\web\NotFoundHttpException('Equipamento não encontrado.');
         }
 
+        // Buscar estatísticas reais
         $totalEquipamentosMesmoTipo = \common\models\Equipamento::find()
             ->where(['tipoEquipamento_id' => $equipamentoModel->tipoEquipamento_id])
             ->count();
@@ -480,6 +525,9 @@ class SiteController extends Controller
         return $this->render('manutencoes');
     }
 
+
+    // NO SiteController.php, método actionReserva:
+
     /**
      * Página de requisição de sala
      */
@@ -495,27 +543,32 @@ class SiteController extends Controller
             throw new \yii\web\NotFoundHttpException('Sala não encontrada.');
         }
 
+        // Buscar todos os equipamentos disponíveis (estado Operacional)
         $equipamentosDisponiveis = \common\models\Equipamento::find()
             ->where(['estado' => 'Operacional'])
             ->with(['tipoEquipamento'])
             ->all();
 
+        // Buscar equipamentos já associados à sala
         $equipamentosSala = $sala->getEquipamentos()
             ->with(['tipoEquipamento'])
             ->all();
 
+        // Se o formulário foi submetido via POST
         if (Yii::$app->request->isPost) {
             $selectedEquipamentos = Yii::$app->request->post('equipamentos', []);
-            $dataReserva = Yii::$app->request->post('data_reserva');
-            $horaInicio = Yii::$app->request->post('hora_inicio');
-            $horaFim = Yii::$app->request->post('hora_fim');
+            $dataReserva = Yii::$app->request->post('data_reserva'); // Data no formato YYYY-MM-DD
+            $horaInicio = Yii::$app->request->post('hora_inicio');   // Hora no formato HH:MM
+            $horaFim = Yii::$app->request->post('hora_fim');         // Hora no formato HH:MM
             $observacoes = Yii::$app->request->post('observacoes');
 
+            // Validar dados
             $errors = [];
 
             if (empty($dataReserva)) {
                 $errors[] = 'Por favor, selecione uma data.';
             } else {
+                // Validar formato da data
                 $dateObj = \DateTime::createFromFormat('Y-m-d', $dataReserva);
                 if (!$dateObj || $dateObj->format('Y-m-d') !== $dataReserva) {
                     $errors[] = 'Formato de data inválido. Use YYYY-MM-DD.';
@@ -536,7 +589,9 @@ class SiteController extends Controller
                 $errors[] = 'A hora de fim deve ser posterior à hora de início.';
             }
 
+            // Verificar se a sala está disponível na data/hora selecionada
             if (empty($errors) && $dataReserva && $horaInicio) {
+                // Criar datetime para início
                 $dataInicio = $dataReserva . ' ' . $horaInicio . ':00';
                 $dataFim = $dataReserva . ' ' . $horaFim . ':00';
 
@@ -565,12 +620,14 @@ class SiteController extends Controller
             }
 
             if (empty($errors)) {
+                // Verificar se a sala está disponível usando o novo método
                 if (!$sala->isDisponivelParaReserva()) {
                     Yii::$app->session->setFlash('error', 'Esta sala não está disponível para requisição. Estado atual: ' . $sala->getEstadoLabel());
                     return $this->refresh();
                 } else {
                     $transaction = Yii::$app->db->beginTransaction();
                     try {
+                        // Criar requisição
                         $requisicao = new \common\models\Requisicao();
                         $requisicao->user_id = Yii::$app->user->id;
                         $requisicao->sala_id = $sala->id;
@@ -582,14 +639,17 @@ class SiteController extends Controller
                             throw new \Exception('Erro ao criar requisição: ' . implode(', ', $requisicao->getFirstErrors()));
                         }
 
+                        // Associar equipamentos selecionados à requisição
                         if (!empty($selectedEquipamentos)) {
                             foreach ($selectedEquipamentos as $equipamentoId) {
                                 $equipamento = \common\models\Equipamento::findOne($equipamentoId);
                                 if ($equipamento) {
+                                    // Verificar se o equipamento está realmente operacional
                                     if ($equipamento->estado !== 'Operacional') {
                                         throw new \Exception("O equipamento {$equipamento->equipamento} não está disponível. Estado atual: {$equipamento->estado}");
                                     }
 
+                                    // Verificar se o equipamento já não está reservado para este horário
                                     $existingRequisicaoEquipamento = \common\models\RequisicaoEquipamento::find()
                                         ->joinWith('idRequisicao0')
                                         ->where(['idEquipamento' => $equipamentoId])
@@ -614,6 +674,7 @@ class SiteController extends Controller
                                         throw new \Exception("O equipamento {$equipamento->equipamento} já está requisitado para este horário.");
                                     }
 
+                                    // Associar equipamento à requisição
                                     $requisicaoEquipamento = new \common\models\RequisicaoEquipamento();
                                     $requisicaoEquipamento->idRequisicao = $requisicao->id;
                                     $requisicaoEquipamento->idEquipamento = $equipamentoId;
@@ -622,11 +683,13 @@ class SiteController extends Controller
                                         throw new \Exception('Erro ao associar equipamento à requisição.');
                                     }
 
+                                    // Atualizar estado do equipamento para "Em Uso" usando a constante
                                     $equipamento->estado = \common\models\Equipamento::ESTADO_EM_USO;
                                     if (!$equipamento->save(false)) {
                                         throw new \Exception('Erro ao atualizar estado do equipamento.');
                                     }
 
+                                    // Associar equipamento à sala (se ainda não estiver associado)
                                     $salaEquipamento = \common\models\SalaEquipamento::find()
                                         ->where(['idSala' => $sala->id, 'idEquipamento' => $equipamentoId])
                                         ->exists();
@@ -643,11 +706,25 @@ class SiteController extends Controller
                             }
                         }
 
+                        // ATUALIZAR ESTADO DA SALA PARA "Requisitada" - USANDO A CONSTANTE
+                        // ADICIONE LOGS PARA DEBUG
+                        Yii::info("=== ANTES DE ATUALIZAR ESTADO DA SALA ===");
+                        Yii::info("Estado atual: " . $sala->estado);
+                        Yii::info("Estado label: " . $sala->getEstadoLabel());
+
                         $sala->estado = \common\models\Sala::ESTADO_EM_USO;
 
+                        Yii::info("Novo estado definido: " . $sala->estado);
+                        Yii::info("Constante ESTADO_REQUISITADA: " . \common\models\Sala::ESTADO_EM_USO);
+
                         if (!$sala->save(false)) {
+                            Yii::error("Erros ao salvar sala: " . print_r($sala->errors, true));
                             throw new \Exception('Erro ao atualizar estado da sala.');
                         }
+
+                        Yii::info("=== DEPOIS DE SALVAR ===");
+                        Yii::info("Estado salvo: " . $sala->estado);
+                        Yii::info("Estado label após salvar: " . $sala->getEstadoLabel());
 
                         $transaction->commit();
 
@@ -661,6 +738,8 @@ class SiteController extends Controller
                     } catch (\Exception $e) {
                         $transaction->rollBack();
                         Yii::$app->session->setFlash('error', 'Erro ao processar a requisição: ' . $e->getMessage());
+                        Yii::error("Erro na actionReserva: " . $e->getMessage());
+                        Yii::error("Stack trace: " . $e->getTraceAsString());
                     }
                 }
             } else {
@@ -675,22 +754,28 @@ class SiteController extends Controller
         ]);
     }
 
+    // NO SiteController.php, adicione este método APÓS o actionReserva:
+
     /**
      * Cancela uma reserva ativa
      */
+    // No SiteController.php ou onde está a ação cancelar-reserva
+    // No SiteController.php
     public function actionCancelarReserva($id)
     {
+        // As classes já devem estar importadas no topo do arquivo
         $sala = Sala::findOne($id);
         if (!$sala) {
-            throw new \yii\web\NotFoundHttpException("Sala não encontrada.");
+            throw new NotFoundHttpException("Sala não encontrada.");
         }
 
+        // Buscar todas as reservas ativas do usuário nesta sala
         $reservasAtivas = Requisicao::find()
             ->where([
                 'user_id' => Yii::$app->user->id,
                 'sala_id' => $sala->id,
             ])
-            ->andWhere(['status' => 'Ativa'])
+            ->andWhere(['status' => 'Ativa']) // Só buscar as ativas
             ->all();
 
         if (empty($reservasAtivas)) {
@@ -701,19 +786,24 @@ class SiteController extends Controller
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($reservasAtivas as $reserva) {
+                // 1. Buscar equipamentos associados a esta reserva
                 $equipamentosReserva = $reserva->getIdEquipamentos()->all();
 
+                // 2. Devolver equipamentos ao estado "Operacional"
                 foreach ($equipamentosReserva as $equipamento) {
                     $equipamento->estado = Equipamento::ESTADO_OPERACIONAL;
                     $equipamento->save(false);
                 }
 
+                // 3. Remover associação da tabela requisicao_equipamento
                 RequisicaoEquipamento::deleteAll(['idRequisicao' => $reserva->id]);
 
+                // 4. Cancelar a reserva
                 $reserva->status = 'Cancelada';
                 $reserva->save(false);
             }
 
+            // 5. Verificar se há outras reservas ativas na sala
             $outrasReservasAtivas = Requisicao::find()
                 ->where([
                     'sala_id' => $sala->id,
@@ -721,6 +811,7 @@ class SiteController extends Controller
                 ])
                 ->exists();
 
+            // 6. Atualizar sala para Livre se não houver outras reservas
             if (!$outrasReservasAtivas) {
                 $sala->estado = \common\models\Sala::ESTADO_LIVRE;
                 $sala->save(false);
@@ -743,11 +834,13 @@ class SiteController extends Controller
      */
     public function actionRemoveEquipamento($sala_id, $equipamento_id)
     {
+        // Verificação simples - apenas usuários logados podem remover
         if (Yii::$app->user->isGuest) {
             Yii::$app->session->setFlash('error', 'Você precisa estar logado para remover equipamentos.');
             return $this->redirect(['site/login']);
         }
 
+        // Lógica para remover o equipamento da sala
         $salaEquipamento = SalaEquipamento::findOne([
             'idSala' => $sala_id,
             'idEquipamento' => $equipamento_id
@@ -767,6 +860,9 @@ class SiteController extends Controller
     }
 
     /**
+     * Solicita manutenção para um equipamento e atualiza estado da sala
+     */
+    /**
      * Solicitar manutenção para uma sala
      */
     public function actionSolicitarManutencaoSala($id)
@@ -782,11 +878,13 @@ class SiteController extends Controller
             throw new \yii\web\NotFoundHttpException('Sala não encontrada.');
         }
 
+        // Verificar se a sala já está em manutenção
         if ($sala->estado === \common\models\Sala::ESTADO_MANUTENCAO) {
             Yii::$app->session->setFlash('info', 'Esta sala já está em manutenção.');
             return $this->redirect(['site/detalhe-sala', 'id' => $id]);
         }
 
+        // Mudar estado da sala para Manutenção
         $sala->estado = \common\models\Sala::ESTADO_MANUTENCAO;
 
         if ($sala->save(false)) {
@@ -816,11 +914,13 @@ class SiteController extends Controller
             throw new \yii\web\NotFoundHttpException('Equipamento não encontrado.');
         }
 
+        // Verificar se o equipamento já está em manutenção
         if ($equipamento->estado === \common\models\Equipamento::ESTADO_MANUTENCAO) {
             Yii::$app->session->setFlash('info', 'Este equipamento já está em manutenção.');
             return $this->redirect(['site/detalhe-equipamento', 'id' => $id]);
         }
 
+        // Mudar estado do equipamento para Manutenção
         $equipamento->estado = \common\models\Equipamento::ESTADO_MANUTENCAO;
 
         if ($equipamento->save(false)) {
@@ -842,8 +942,7 @@ class SiteController extends Controller
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            // Se já estiver logado, redireciona para tiposequipamento
-            return $this->redirect(['site/tiposequipamento']);
+            return $this->goHome();
         }
 
         $this->layout = 'login';
@@ -852,8 +951,7 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             // Verificar se o user tem acesso ao frontend
             if (Yii::$app->user->can('frontOfficeAccess')) {
-                // Redirecionar para tiposequipamento após login bem-sucedido
-                return $this->redirect(['site/tiposequipamento']);
+                return $this->goBack();
             } else {
                 // Se não tiver acesso ao frontend (AssistenteManutencao), redirecionar para backend
                 Yii::$app->user->logout();
@@ -878,7 +976,7 @@ class SiteController extends Controller
     {
         Yii::$app->user->logout();
 
-        return $this->redirect(['site/login']);
+        return $this->goHome();
     }
 
     /**
@@ -921,13 +1019,13 @@ class SiteController extends Controller
      */
     public function actionSignup()
     {
+        // Definir layout sem navbar
         $this->layout = 'login';
 
         $model = new SignupForm();
         if ($model->load(Yii::$app->request->post()) && $model->signup()) {
             Yii::$app->session->setFlash('success', 'Registo efetuado com sucesso. Já pode fazer login.');
-            // Após registro, redireciona para login (e depois para tiposequipamento após login)
-            return $this->redirect(['site/login']);
+            return $this->goHome();
         }
 
         return $this->render('signup', [
@@ -974,8 +1072,7 @@ class SiteController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
             Yii::$app->session->setFlash('success', 'Nova password guardada.');
-            // Após reset de senha, redireciona para login (e depois para tiposequipamento)
-            return $this->redirect(['site/login']);
+            return $this->goHome();
         }
 
         return $this->render('resetPassword', [
@@ -999,11 +1096,11 @@ class SiteController extends Controller
         }
         if ($model->verifyEmail()) {
             Yii::$app->session->setFlash('success', 'O seu email foi confirmado!');
-            return $this->redirect(['site/login']);
+            return $this->goHome();
         }
 
         Yii::$app->session->setFlash('error', 'Não foi possível verificar a sua conta com o token fornecido.');
-        return $this->redirect(['site/login']);
+        return $this->goHome();
     }
 
     /**

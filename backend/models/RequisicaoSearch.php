@@ -11,8 +11,9 @@ class RequisicaoSearch extends Requisicao
     public $sala_nome;
     public $user_name;
     public $bloco_nome;
-    public $dataInicio_range;
-    public $dataFim_range;
+    // Remover as propriedades range e manter apenas as datas simples
+    // public $dataInicio_range;
+    // public $dataFim_range;
 
     /**
      * {@inheritdoc}
@@ -23,7 +24,8 @@ class RequisicaoSearch extends Requisicao
             [['id', 'user_id', 'sala_id'], 'integer'],
             [['status'], 'string'],
             [['dataInicio', 'dataFim', 'sala_nome', 'user_name', 'bloco_nome'], 'safe'],
-            [['dataInicio_range', 'dataFim_range'], 'safe'],
+            // Remover range das regras
+            // [['dataInicio_range', 'dataFim_range'], 'safe'],
         ];
     }
 
@@ -90,20 +92,20 @@ class RequisicaoSearch extends Requisicao
             'requisicao.status' => $this->status,
         ]);
 
-        // Filtro por intervalo de data de início
-        if ($this->dataInicio_range) {
-            list($start, $end) = explode(' - ', $this->dataInicio_range);
-            $query->andFilterWhere(['between', 'requisicao.dataInicio', $start, $end]);
-        } elseif ($this->dataInicio) {
-            $query->andFilterWhere(['date(requisicao.dataInicio)' => $this->dataInicio]);
+        // Filtro por data de início específica - converter dd/mm/aaaa para aaaa-mm-dd
+        if ($this->dataInicio) {
+            $dataFormatada = $this->converterDataParaMySQL($this->dataInicio);
+            if ($dataFormatada) {
+                $query->andFilterWhere(['DATE(requisicao.dataInicio)' => $dataFormatada]);
+            }
         }
 
-        // Filtro por intervalo de data de fim
-        if ($this->dataFim_range) {
-            list($start, $end) = explode(' - ', $this->dataFim_range);
-            $query->andFilterWhere(['between', 'requisicao.dataFim', $start, $end]);
-        } elseif ($this->dataFim) {
-            $query->andFilterWhere(['date(requisicao.dataFim)' => $this->dataFim]);
+        // Filtro por data de fim específica - converter dd/mm/aaaa para aaaa-mm-dd
+        if ($this->dataFim) {
+            $dataFormatada = $this->converterDataParaMySQL($this->dataFim);
+            if ($dataFormatada) {
+                $query->andFilterWhere(['DATE(requisicao.dataFim)' => $dataFormatada]);
+            }
         }
 
         // Filtros de texto
@@ -112,5 +114,44 @@ class RequisicaoSearch extends Requisicao
             ->andFilterWhere(['like', 'bloco.nome', $this->bloco_nome]);
 
         return $dataProvider;
+    }
+
+    /**
+     * Converte data de dd/mm/aaaa para aaaa-mm-dd
+     * @param string $data Data no formato dd/mm/aaaa
+     * @return string|null Data no formato aaaa-mm-dd ou null se inválida
+     */
+    private function converterDataParaMySQL($data)
+    {
+        if (empty($data)) {
+            return null;
+        }
+
+        // Verificar se já está no formato aaaa-mm-dd
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $data)) {
+            return $data;
+        }
+
+        // Tentar converter de dd/mm/aaaa para aaaa-mm-dd
+        $partes = explode('/', $data);
+        if (count($partes) === 3) {
+            $dia = $partes[0];
+            $mes = $partes[1];
+            $ano = $partes[2];
+
+            // Validar se são números
+            if (is_numeric($dia) && is_numeric($mes) && is_numeric($ano)) {
+                // Garantir 2 dígitos para dia e mês
+                $dia = str_pad($dia, 2, '0', STR_PAD_LEFT);
+                $mes = str_pad($mes, 2, '0', STR_PAD_LEFT);
+
+                // Verificar se é uma data válida
+                if (checkdate((int)$mes, (int)$dia, (int)$ano)) {
+                    return $ano . '-' . $mes . '-' . $dia;
+                }
+            }
+        }
+
+        return null;
     }
 }

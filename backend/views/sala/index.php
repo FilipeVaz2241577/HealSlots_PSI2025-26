@@ -48,42 +48,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
                 <div class="card-body">
 
-                    <!-- Formulário de Pesquisa -->
-                    <div class="row mb-3">
-                        <div class="col-md-8">
-                            <?php $form = ActiveForm::begin([
-                                'method' => 'get',
-                                'action' => ['index'],
-                            ]); ?>
 
-                            <div class="row g-2">
-                                <div class="col-md-3">
-                                    <?= Html::textInput('SalaSearch[nome]', $searchModel->nome ?? '', [
-                                        'class' => 'form-control form-control-sm',
-                                        'placeholder' => 'Nome da sala...'
-                                    ]) ?>
-                                </div>
-                                <div class="col-md-3">
-                                    <?= Html::textInput('SalaSearch[blocoName]', $searchModel->blocoName ?? '', [
-                                        'class' => 'form-control form-control-sm',
-                                        'placeholder' => 'Nome do bloco...'
-                                    ]) ?>
-                                </div>
-                                <div class="col-md-3">
-                                    <?= Html::dropDownList('SalaSearch[estado]', $searchModel->estado ?? '', Sala::optsEstado(), [
-                                        'class' => 'form-control form-control-sm',
-                                        'prompt' => 'Todos os estados'
-                                    ]) ?>
-                                </div>
-                                <div class="col-md-3">
-                                    <?= Html::submitButton('<i class="fas fa-search"></i> Pesquisar', ['class' => 'btn btn-primary btn-sm']) ?>
-                                    <?= Html::a('<i class="fas fa-redo"></i>', ['index'], ['class' => 'btn btn-outline-secondary btn-sm']) ?>
-                                </div>
-                            </div>
-
-                            <?php ActiveForm::end(); ?>
-                        </div>
-                    </div>
 
                     <!-- Tabela CRUD -->
                     <?php Pjax::begin(['timeout' => 5000]); ?>

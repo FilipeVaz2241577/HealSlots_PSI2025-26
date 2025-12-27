@@ -31,6 +31,8 @@ $icones = [
         4 => 'fa-boxes',
 ];
 
+$this->title = 'Tipos de Equipamento';
+$this->params['breadcrumbs'][] = $this->title;
 
 // Calcular estatísticas totais
 $totalTipos = count($tiposEquipamento);

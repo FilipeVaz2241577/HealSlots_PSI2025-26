@@ -5,6 +5,7 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\User;
+use yii\helpers\ArrayHelper;
 
 /**
  * UserSearch represents the model behind the search form of `common\models\User`.
@@ -12,6 +13,8 @@ use common\models\User;
 class UserSearch extends User
 {
     public $role;
+    public $created_at_start;
+    public $created_at_end;
 
     /**
      * {@inheritdoc}
@@ -20,8 +23,21 @@ class UserSearch extends User
     {
         return [
             [['id', 'status'], 'integer'],
-            [['username', 'email', 'created_at', 'role'], 'safe'],
+            [['username', 'email', 'role', 'created_at_start', 'created_at_end'], 'safe'],
+            [['created_at_start', 'created_at_end'], 'date', 'format' => 'php:Y-m-d'],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return ArrayHelper::merge(parent::attributeLabels(), [
+            'role' => 'Função (Role)',
+            'created_at_start' => 'Data de Criação (Início)',
+            'created_at_end' => 'Data de Criação (Fim)',
+        ]);
     }
 
     /**
@@ -84,8 +100,13 @@ class UserSearch extends User
             }
         }
 
-        if ($this->created_at) {
-            $query->andFilterWhere(['>=', 'created_at', $this->created_at]);
+        // Filtro por intervalo de datas de criação
+        if ($this->created_at_start) {
+            $query->andFilterWhere(['>=', 'created_at', strtotime($this->created_at_start . ' 00:00:00')]);
+        }
+
+        if ($this->created_at_end) {
+            $query->andFilterWhere(['<=', 'created_at', strtotime($this->created_at_end . ' 23:59:59')]);
         }
 
         return $dataProvider;

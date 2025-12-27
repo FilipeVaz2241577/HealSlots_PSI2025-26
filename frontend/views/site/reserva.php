@@ -9,6 +9,11 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 
+$this->title = 'Reservar Sala: ' . $sala->nome;
+$this->params['breadcrumbs'][] = ['label' => 'Blocos', 'url' => ['site/blocos']];
+$this->params['breadcrumbs'][] = ['label' => $sala->bloco->nome, 'url' => ['site/salas', 'bloco' => $sala->bloco_id]];
+$this->params['breadcrumbs'][] = ['label' => $sala->nome, 'url' => ['site/detalhe-sala', 'id' => $sala->id]];
+$this->params['breadcrumbs'][] = 'Reservar';
 
 // Mapear cores para estados - baseado no modelo Sala
 $coresEstadoSala = [

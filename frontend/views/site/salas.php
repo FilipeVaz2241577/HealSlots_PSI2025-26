@@ -11,7 +11,13 @@
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-
+$this->title = $blocoModel ? 'Salas - ' . Html::encode($blocoModel->nome) : 'Todas as Salas';
+$this->params['breadcrumbs'][] = ['label' => 'Blocos', 'url' => ['site/blocos']];
+if ($blocoModel) {
+    $this->params['breadcrumbs'][] = $this->title;
+} else {
+    $this->params['breadcrumbs'][] = $this->title;
+}
 
 // Mapear cores para estados (usando as constantes do modelo)
 $coresEstado = [
