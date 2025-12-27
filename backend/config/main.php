@@ -13,21 +13,23 @@ return [
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
     'modules' => [
-            'api' => [
-                'class' => 'backend\modules\api\ModuleAPI',
-            ]
+        'api' => [
+            'class' => 'backend\modules\api\ModuleAPI',
+        ]
     ],
     'components' => [
         'view' => [
             'theme' => [
                 'pathMap' => [
                     '@app/views' => '@app/views',
-//                    '@app/views' => '@vendor/hail812/yii2-adminlte3/src/views'
                 ],
             ],
         ],
         'request' => [
             'csrfParam' => '_csrf-backend',
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser', // ADICIONAR ESTA LINHA
+            ],
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -53,19 +55,46 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                // API RESTful - Sala
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                        'api/users' => 'api/users',
+                        'api/sala' => 'api/sala', // SINGULAR
                     ],
                     'extraPatterns' => [
                         'GET search' => 'search',
                     ],
                 ],
+                // API RESTful - Bloco
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                        'api/salas' => 'api/salas',
+                        'api/bloco' => 'api/bloco', // SINGULAR
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                // API RESTful - Requisição
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/requisicao' => 'api/requisicao', // SINGULAR
+                    ],
+                    'extraPatterns' => [
+                        'GET search' => 'search',
+                    ],
+                ],
+                // Para manter compatibilidade com URLs antigas
+                'api/salas' => 'api/sala/index',
+                'api/blocos' => 'api/bloco/index',
+                'api/requisicoes' => 'api/requisicao/index',
+
+                // Outras APIs (mantenha como estão)
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'api/users' => 'api/users',
                     ],
                     'extraPatterns' => [
                         'GET search' => 'search',
@@ -92,25 +121,7 @@ return [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                        'api/blocos' => 'api/blocos',
-                    ],
-                    'extraPatterns' => [
-                        'GET search' => 'search',
-                    ],
-                ],
-                [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => [
                         'api/manutencoes' => 'api/manutencoes',
-                    ],
-                    'extraPatterns' => [
-                        'GET search' => 'search',
-                    ],
-                ],
-                [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'api/requisicoes' => 'api/requisicoes',
                     ],
                     'extraPatterns' => [
                         'GET search' => 'search',
