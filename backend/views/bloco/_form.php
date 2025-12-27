@@ -14,10 +14,18 @@ use yii\bootstrap5\Html;
         'id' => 'bloco-form',
         'options' => ['class' => 'form-horizontal'],
         'fieldConfig' => [
+<<<<<<< HEAD
             'template' => "{label}\n{input}\n{error}",
             'labelOptions' => ['class' => 'form-label fw-bold'],
             'inputOptions' => ['class' => 'form-control'],
             'errorOptions' => ['class' => 'invalid-feedback'],
+=======
+            'template' => "{label}\n{input}\n{hint}\n{error}",
+            'labelOptions' => ['class' => 'form-label fw-bold'],
+            'inputOptions' => ['class' => 'form-control'],
+            'errorOptions' => ['class' => 'invalid-feedback d-block'],
+            'hintOptions' => ['class' => 'form-text text-muted small'],
+>>>>>>> origin/filipe
         ],
     ]); ?>
 
@@ -26,8 +34,15 @@ use yii\bootstrap5\Html;
         <div class="col-md-8">
             <?= $form->field($model, 'nome')->textInput([
                 'maxlength' => true,
+<<<<<<< HEAD
                 'placeholder' => 'Digite o nome do bloco operatório'
             ])->label('Nome do Bloco <span class="text-danger">*</span>') ?>
+=======
+                'placeholder' => 'Digite o nome do bloco operatório',
+                // REMOVIDO autofocus
+            ])->label('Nome do Bloco <span class="text-danger">*</span>')
+                ->hint('O nome deve ser único em todo o sistema.') ?>
+>>>>>>> origin/filipe
         </div>
 
         <!-- Campo Estado -->
@@ -35,7 +50,10 @@ use yii\bootstrap5\Html;
             <?= $form->field($model, 'estado')->dropDownList([
                 'ativo' => 'Ativo',
                 'inativo' => 'Inativo',
+<<<<<<< HEAD
                 'manutencao' => 'Em Manutenção'
+=======
+>>>>>>> origin/filipe
             ], [
                 'prompt' => 'Selecione o estado',
                 'class' => 'form-select'
@@ -53,9 +71,12 @@ use yii\bootstrap5\Html;
                         <strong class="text-success">• Ativo:</strong> Bloco disponível para uso
                     </div>
                     <div class="col-md-4">
+<<<<<<< HEAD
                         <strong class="text-warning">• Em Manutenção:</strong> Bloco temporariamente indisponível
                     </div>
                     <div class="col-md-4">
+=======
+>>>>>>> origin/filipe
                         <strong class="text-danger">• Inativo:</strong> Bloco permanentemente desativado
                     </div>
                 </div>
@@ -121,6 +142,7 @@ use yii\bootstrap5\Html;
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
 
             <div class="col-md-3">
                 <div class="card border-0 bg-light">
@@ -141,6 +163,8 @@ use yii\bootstrap5\Html;
                     </div>
                 </div>
             </div>
+=======
+>>>>>>> origin/filipe
         </div>
     <?php endif; ?>
 
@@ -170,7 +194,12 @@ use yii\bootstrap5\Html;
 
                 <?= Html::submitButton('<i class="fas fa-save me-2"></i>' . ($model->isNewRecord ? 'Criar Bloco' : 'Guardar Alterações'), [
                     'class' => 'btn btn-primary',
+<<<<<<< HEAD
                     'name' => 'submit-button'
+=======
+                    'name' => 'submit-button',
+                    'type' => 'submit', // Garantir que é type="submit"
+>>>>>>> origin/filipe
                 ]) ?>
             </div>
         </div>
@@ -200,7 +229,15 @@ use yii\bootstrap5\Html;
     }
     .alert-info {
         background-color: #d1ecf1;
+<<<<<<< HEAD
         border-color: #bee5eb;
         color: #0c5460;
+=======
+        border-color: '#bee5eb';
+        color: '#0c5460';
+    }
+    .is-invalid {
+        border-color: '#dc3545';
+>>>>>>> origin/filipe
     }
 </style>

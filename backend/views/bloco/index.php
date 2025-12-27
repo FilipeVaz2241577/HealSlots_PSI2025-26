@@ -24,6 +24,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Estatísticas com SmallBox -->
     <div class="row mb-4">
         <div class="col-lg-3 col-6">
@@ -59,6 +60,9 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
             ]) ?>
         </div>
     </div>
+=======
+
+>>>>>>> origin/filipe
 
     <!-- Card Principal -->
     <div class="row">
@@ -75,6 +79,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
                 <div class="card-body">
 
+<<<<<<< HEAD
                     <!-- Formulário de Pesquisa -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -95,6 +100,8 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                             <?php ActiveForm::end(); ?>
                         </div>
                     </div>
+=======
+>>>>>>> origin/filipe
 
                     <!-- Tabela CRUD -->
                     <?php Pjax::begin(['timeout' => 5000]); ?>
@@ -282,7 +289,10 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                                 <i class="fas fa-info-circle me-1"></i>Legenda:
                                 <span class="badge bg-success me-1"><i class="fas fa-check-circle me-1"></i>Ativo</span>
                                 <span class="badge bg-secondary me-1"><i class="fas fa-times-circle me-1"></i>Inativo</span>
+<<<<<<< HEAD
                                 <span class="badge bg-warning"><i class="fas fa-tools me-1"></i>Manutenção</span>
+=======
+>>>>>>> origin/filipe
                             </small>
                         </div>
                         <div class="col-md-6 text-end">
@@ -298,6 +308,45 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
     </div>
 </div>
 
+<<<<<<< HEAD
+=======
+<!-- Estatísticas com SmallBox -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $totalBlocosCount ?? 0,
+            'text' => 'Total Blocos',
+            'icon' => 'fas fa-building',
+            'theme' => 'info'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $activeBlocosCount ?? 0,
+            'text' => 'Blocos Ativos',
+            'icon' => 'fas fa-check-circle',
+            'theme' => 'success'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $inactiveBlocosCount ?? 0,
+            'text' => 'Blocos Inativos',
+            'icon' => 'fas fa-times-circle',
+            'theme' => 'warning'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $totalSalasCount ?? 0,
+            'text' => 'Total Salas',
+            'icon' => 'fas fa-door-open',
+            'theme' => 'primary'
+        ]) ?>
+    </div>
+</div>
+
+>>>>>>> origin/filipe
 <!-- CSS adicional -->
 <style>
     .table th {

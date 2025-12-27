@@ -6,6 +6,10 @@ use common\models\Sala;
 
 /** @var yii\web\View $this */
 /** @var common\models\Sala $model */
+<<<<<<< HEAD
+=======
+/** @var array $blocos */
+>>>>>>> origin/filipe
 /** @var yii\bootstrap5\ActiveForm $form */
 ?>
 

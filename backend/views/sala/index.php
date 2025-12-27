@@ -31,6 +31,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Estatísticas com SmallBox -->
     <div class="row mb-4">
         <div class="col-lg-3 col-6">
@@ -66,6 +67,9 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
             ]) ?>
         </div>
     </div>
+=======
+
+>>>>>>> origin/filipe
 
     <!-- Card Principal -->
     <div class="row">
@@ -82,6 +86,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
                 <div class="card-body">
 
+<<<<<<< HEAD
                     <!-- Formulário de Pesquisa -->
                     <div class="row mb-3">
                         <div class="col-md-8">
@@ -118,6 +123,9 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                             <?php ActiveForm::end(); ?>
                         </div>
                     </div>
+=======
+
+>>>>>>> origin/filipe
 
                     <!-- Tabela CRUD -->
                     <?php Pjax::begin(['timeout' => 5000]); ?>
@@ -248,6 +256,45 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
     </div>
 </div>
 
+<<<<<<< HEAD
+=======
+<!-- Estatísticas com SmallBox -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $totalSalasCount ?? 0,
+            'text' => 'Total Salas',
+            'icon' => 'fas fa-door-open',
+            'theme' => 'info'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $salasLivresCount ?? 0,
+            'text' => 'Salas Livres',
+            'icon' => 'fas fa-circle-check',
+            'theme' => 'success'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $salasEmUsoCount ?? 0,
+            'text' => 'Salas Em Uso',
+            'icon' => 'fas fa-procedures',
+            'theme' => 'danger'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+            'title' => $salasManutencaoCount ?? 0,
+            'text' => 'Em Manutenção',
+            'icon' => 'fas fa-tools',
+            'theme' => 'warning'
+        ]) ?>
+    </div>
+</div>
+
+>>>>>>> origin/filipe
 <!-- CSS adicional -->
 <style>
     .table th {

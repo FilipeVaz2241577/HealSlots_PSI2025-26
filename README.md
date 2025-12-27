@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/filipe
 <p align="center">
     <a href="https://github.com/yiisoft" target="_blank">
         <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
@@ -59,6 +62,9 @@ frontend
 vendor/                  contains dependent 3rd-party packages
 environments/            contains environment-based overrides
 ```
+<<<<<<< HEAD
 =======
 # HealSlots_PSI2025-26
 >>>>>>> 77430f7fc2800741de6d0b34146c89341b62820d
+=======
+>>>>>>> origin/filipe

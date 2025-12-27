@@ -4,8 +4,11 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+<<<<<<< HEAD
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
+=======
+>>>>>>> origin/filipe
 
 /**
  * This is the model class for table "manutencao".
@@ -18,16 +21,22 @@ use yii\behaviors\BlameableBehavior;
  * @property string $dataFim
  * @property string $descricao
  * @property string $status
+<<<<<<< HEAD
  * @property int $created_by
  * @property int $updated_by
  * @property int $created_at
  * @property int $updated_at
+=======
+>>>>>>> origin/filipe
  *
  * @property User $user
  * @property Equipamento $equipamento
  * @property Sala $sala
+<<<<<<< HEAD
  * @property User $createdBy
  * @property User $updatedBy
+=======
+>>>>>>> origin/filipe
  */
 class Manutencao extends ActiveRecord
 {
@@ -46,6 +55,7 @@ class Manutencao extends ActiveRecord
     /**
      * {@inheritdoc}
      */
+<<<<<<< HEAD
     public function behaviors()
     {
         return [
@@ -65,11 +75,22 @@ class Manutencao extends ActiveRecord
     {
         return [
             [['equipamento_id', 'dataInicio'], 'required'],
+=======
+    public function rules()
+    {
+        return [
+            [['dataInicio'], 'required'],
+>>>>>>> origin/filipe
             [['equipamento_id', 'user_id', 'sala_id'], 'integer'],
             [['dataInicio', 'dataFim'], 'safe'],
             [['descricao'], 'string'],
             [['status'], 'string', 'max' => 20],
             [['status'], 'default', 'value' => self::STATUS_PENDENTE],
+<<<<<<< HEAD
+=======
+            // Validar que pelo menos um (equipamento OU sala) está preenchido
+            [['equipamento_id', 'sala_id'], 'validateEquipamentoOrSala', 'skipOnEmpty' => false],
+>>>>>>> origin/filipe
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
             [['equipamento_id'], 'exist', 'skipOnError' => true, 'targetClass' => Equipamento::class, 'targetAttribute' => ['equipamento_id' => 'id']],
             [['sala_id'], 'exist', 'skipOnError' => true, 'targetClass' => Sala::class, 'targetAttribute' => ['sala_id' => 'id']],
@@ -77,6 +98,20 @@ class Manutencao extends ActiveRecord
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * Validação personalizada: Pelo menos equipamento OU sala deve ser preenchido
+     */
+    public function validateEquipamentoOrSala($attribute, $params, $validator)
+    {
+        if (empty($this->equipamento_id) && empty($this->sala_id)) {
+            $this->addError('equipamento_id', 'Deve selecionar pelo menos um equipamento OU uma sala.');
+            $this->addError('sala_id', 'Deve selecionar pelo menos um equipamento OU uma sala.');
+        }
+    }
+
+    /**
+>>>>>>> origin/filipe
      * {@inheritdoc}
      */
     public function attributeLabels()
@@ -90,10 +125,13 @@ class Manutencao extends ActiveRecord
             'dataFim' => 'Data Fim',
             'descricao' => 'Descrição',
             'status' => 'Estado',
+<<<<<<< HEAD
             'created_by' => 'Criado Por',
             'updated_by' => 'Atualizado Por',
             'created_at' => 'Data Criação',
             'updated_at' => 'Data Atualização',
+=======
+>>>>>>> origin/filipe
         ];
     }
 
@@ -122,6 +160,7 @@ class Manutencao extends ActiveRecord
     }
 
     /**
+<<<<<<< HEAD
      * Gets query for [[CreatedBy]].
      */
     public function getCreatedBy()
@@ -138,6 +177,8 @@ class Manutencao extends ActiveRecord
     }
 
     /**
+=======
+>>>>>>> origin/filipe
      * Get status options
      */
     public static function getStatusOptions()
@@ -192,4 +233,88 @@ class Manutencao extends ActiveRecord
         }
         return null;
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Get the title for display
+     */
+    public function getTitle()
+    {
+        if ($this->equipamento) {
+            return 'Manutenção do Equipamento: ' . $this->equipamento->equipamento;
+        } elseif ($this->sala) {
+            return 'Manutenção da Sala: ' . $this->sala->nome;
+        }
+        return 'Manutenção #' . $this->id;
+    }
+
+    /**
+     * Get current location (sala) for equipment maintenance
+     */
+    public function getLocalizacao()
+    {
+        if ($this->sala) {
+            return $this->sala->nome . ($this->sala->bloco ? ' (' . $this->sala->bloco->nome . ')' : '');
+        } elseif ($this->equipamento) {
+            $sala = $this->equipamento->getCurrentSala();
+            if ($sala) {
+                return $sala->nome . ($sala->bloco ? ' (' . $sala->bloco->nome . ')' : '');
+            }
+        }
+        return 'Não localizado';
+    }
+
+    /**
+     * Before save logic
+     */
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            // Se estiver concluindo a manutenção
+            if (!$insert && $this->status === self::STATUS_CONCLUIDA && !$this->dataFim) {
+                $this->dataFim = date('Y-m-d H:i:s');
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get equipamentos que NÃO estão em manutenção ativa
+     */
+    public static function getEquipamentosDisponiveis()
+    {
+        // Buscar IDs de equipamentos que estão em manutenção ativa (Pendente ou Em Curso)
+        $equipamentosEmManutencao = self::find()
+            ->select('equipamento_id')
+            ->where(['status' => [self::STATUS_PENDENTE, self::STATUS_EM_CURSO]])
+            ->andWhere(['not', ['equipamento_id' => null]])
+            ->column();
+
+        // Buscar todos os equipamentos que NÃO estão na lista acima
+        return Equipamento::find()
+            ->where(['not in', 'id', $equipamentosEmManutencao])
+            ->all();
+    }
+
+    /**
+     * Get salas que NÃO estão em manutenção ativa
+     */
+    public static function getSalasDisponiveis()
+    {
+        // Buscar IDs de salas que estão em manutenção ativa (Pendente ou Em Curso)
+        $salasEmManutencao = self::find()
+            ->select('sala_id')
+            ->where(['status' => [self::STATUS_PENDENTE, self::STATUS_EM_CURSO]])
+            ->andWhere(['not', ['sala_id' => null]])
+            ->column();
+
+        // Buscar todas as salas que NÃO estão na lista acima
+        return Sala::find()
+            ->where(['not in', 'id', $salasEmManutencao])
+            ->all();
+    }
+>>>>>>> origin/filipe
 }

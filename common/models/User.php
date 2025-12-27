@@ -36,7 +36,11 @@ class User extends ActiveRecord implements IdentityInterface
 
     public $password;
     public $password_repeat;
+<<<<<<< HEAD
     public $role; // Adicione esta propriedade
+=======
+    public $role;
+>>>>>>> origin/filipe
 
     /**
      * {@inheritdoc}
@@ -65,6 +69,7 @@ class User extends ActiveRecord implements IdentityInterface
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
 
+<<<<<<< HEAD
             // Campos obrigatórios
             [['username', 'email'], 'required'],
 
@@ -87,6 +92,17 @@ class User extends ActiveRecord implements IdentityInterface
             ['password_repeat', 'compare', 'compareAttribute' => 'password', 'on' => self::SCENARIO_CREATE],
 
             // Campo role para o formulário
+=======
+            [['username', 'email'], 'required'],
+            [['username', 'email', 'password'], 'string', 'max' => 255],
+            [['password'], 'string', 'min' => 6, 'on' => self::SCENARIO_CREATE],
+            ['email', 'email'],
+            [['username'], 'unique'],
+            [['email'], 'unique'],
+            ['password', 'required', 'on' => self::SCENARIO_CREATE],
+            ['password_repeat', 'required', 'on' => self::SCENARIO_CREATE],
+            ['password_repeat', 'compare', 'compareAttribute' => 'password', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_UPDATE]],
+>>>>>>> origin/filipe
             ['role', 'safe'],
         ];
     }
@@ -98,7 +114,11 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_CREATE] = ['username', 'email', 'password', 'password_repeat', 'status', 'role'];
+<<<<<<< HEAD
         $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'status', 'role'];
+=======
+        $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'password', 'password_repeat', 'status', 'role'];
+>>>>>>> origin/filipe
         return $scenarios;
     }
 
@@ -130,7 +150,10 @@ class User extends ActiveRecord implements IdentityInterface
                 $this->generateAuthKey();
             }
 
+<<<<<<< HEAD
             // Se foi fornecida uma nova password, gerar o hash
+=======
+>>>>>>> origin/filipe
             if (!empty($this->password)) {
                 $this->setPassword($this->password);
             }
@@ -141,6 +164,115 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * After save - assign role
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        // Assign role if provided
+        if ($this->role) {
+            $auth = Yii::$app->authManager;
+            $auth->revokeAll($this->id);
+
+            $role = $auth->getRole($this->role);
+            if ($role) {
+                $auth->assign($role, $this->id);
+            }
+        }
+    }
+
+    /**
+     * RELAÇÕES ADICIONADAS AQUI:
+     */
+
+    /**
+     * Gets query for [[AuthAssignments]].
+     * Relação com a tabela auth_assignment
+     */
+    public function getAuthAssignments()
+    {
+        return $this->hasMany(\yii\db\ActiveRecord::class, ['user_id' => 'id'])
+            ->viaTable('auth_assignment', ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Roles]].
+     * Relação com as roles através da tabela auth_assignment
+     */
+    public function getRoles()
+    {
+        return $this->hasMany(\yii\db\ActiveRecord::class, ['name' => 'item_name'])
+            ->viaTable('auth_assignment', ['user_id' => 'id']);
+    }
+
+    /**
+     * Check if user has specific role
+     */
+    public function hasRole($roleName)
+    {
+        $auth = Yii::$app->authManager;
+        $roles = $auth->getRolesByUser($this->id);
+        return isset($roles[$roleName]);
+    }
+
+    /**
+     * Get user roles as array
+     */
+    public function getRoleNames()
+    {
+        $auth = Yii::$app->authManager;
+        $roles = $auth->getRolesByUser($this->id);
+        return array_keys($roles);
+    }
+
+    /**
+     * Get primary role name
+     */
+    public function getPrimaryRole()
+    {
+        $roles = $this->getRoleNames();
+        return !empty($roles) ? $roles[0] : null;
+    }
+
+    /**
+     * Soft delete - marca como inativo
+     */
+    public function softDelete()
+    {
+        $this->status = self::STATUS_INACTIVE;
+        return $this->save(false);
+    }
+
+    /**
+     * Restaurar utilizador
+     */
+    public function restore()
+    {
+        $this->status = self::STATUS_ACTIVE;
+        return $this->save(false);
+    }
+
+    /**
+     * Verificar se está eliminado (inativo)
+     */
+    public function isDeleted()
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    /**
+     * Query para utilizadores ativos (exclui inativos)
+     */
+    public static function findActive()
+    {
+        return static::find()->where(['status' => self::STATUS_ACTIVE]);
+    }
+
+    /**
+>>>>>>> origin/filipe
      * {@inheritdoc}
      */
     public static function findIdentity($id)

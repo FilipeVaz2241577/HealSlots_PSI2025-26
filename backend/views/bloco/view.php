@@ -153,6 +153,7 @@ if ($model->salas) {
                                             'class' => 'btn btn-success btn-block mb-2 text-left w-100',
                                         ]) ?>
 
+<<<<<<< HEAD
                                         <?= Html::a('<i class="fas fa-chart-bar me-2"></i>Relatórios', ['#'], [
                                             'class' => 'btn btn-warning btn-block mb-2 text-left w-100',
                                         ]) ?>
@@ -161,6 +162,8 @@ if ($model->salas) {
                                             'class' => 'btn btn-secondary btn-block text-left w-100',
                                             'onclick' => 'window.print(); return false;'
                                         ]) ?>
+=======
+>>>>>>> origin/filipe
                                     </div>
                                 </div>
                             </div>

@@ -3,6 +3,12 @@
 namespace common\models;
 
 use Yii;
+<<<<<<< HEAD
+=======
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\behaviors\BlameableBehavior;
+>>>>>>> origin/filipe
 
 /**
  * This is the model class for table "sala".
@@ -14,11 +20,16 @@ use Yii;
  *
  * @property Bloco $bloco
  */
+<<<<<<< HEAD
 class Sala extends \yii\db\ActiveRecord
 {
     /**
      * ENUM field values
      */
+=======
+class Sala extends ActiveRecord
+{
+>>>>>>> origin/filipe
     const ESTADO_LIVRE = 'Livre';
     const ESTADO_EM_USO = 'EmUso';
     const ESTADO_MANUTENCAO = 'Manutencao';
@@ -29,7 +40,20 @@ class Sala extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
+<<<<<<< HEAD
         return 'sala';
+=======
+        return '{{%sala}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+        ];
+>>>>>>> origin/filipe
     }
 
     /**
@@ -64,8 +88,11 @@ class Sala extends \yii\db\ActiveRecord
 
     /**
      * Gets query for [[Bloco]].
+<<<<<<< HEAD
      *
      * @return \yii\db\ActiveQuery
+=======
+>>>>>>> origin/filipe
      */
     public function getBloco()
     {
@@ -88,8 +115,13 @@ class Sala extends \yii\db\ActiveRecord
     {
         return [
             self::ESTADO_LIVRE => 'Livre',
+<<<<<<< HEAD
             self::ESTADO_EM_USO => 'Em Uso',
             self::ESTADO_MANUTENCAO => 'Manutenção',
+=======
+            self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
+            self::ESTADO_MANUTENCAO => 'Em Manutenção',
+>>>>>>> origin/filipe
             self::ESTADO_DESATIVADA => 'Desativada',
         ];
     }
@@ -99,7 +131,26 @@ class Sala extends \yii\db\ActiveRecord
      */
     public function getEstadoLabel()
     {
+<<<<<<< HEAD
         return self::optsEstado()[$this->estado] ?? 'Desconhecido';
+=======
+        $opts = self::optsEstado();
+
+        // Verificar exatamente o valor armazenado
+        if (isset($opts[$this->estado])) {
+            return $opts[$this->estado];
+        }
+
+        // Se não encontrar, verificar case-insensitive
+        $estadoLower = strtolower($this->estado);
+        foreach ($opts as $key => $label) {
+            if (strtolower($key) === $estadoLower) {
+                return $label;
+            }
+        }
+
+        return 'Desconhecido (' . $this->estado . ')';
+>>>>>>> origin/filipe
     }
 
     /**
@@ -155,6 +206,21 @@ class Sala extends \yii\db\ActiveRecord
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * Verifica se a sala está disponível para reserva
+     * @return bool
+     */
+    public function isDisponivelParaReserva()
+    {
+        return in_array($this->estado, [
+            self::ESTADO_LIVRE,
+            self::ESTADO_EM_USO  // Sala ainda pode ser reservada mesmo se já estiver em uso
+        ]);
+    }
+
+    /**
+>>>>>>> origin/filipe
      * Get all salas count by estado
      */
     public static function getCountByEstado()
@@ -199,4 +265,38 @@ class Sala extends \yii\db\ActiveRecord
             ])
             ->count();
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Get equipamentos in this sala
+     */
+    public function getEquipamentos()
+    {
+        return $this->hasMany(Equipamento::class, ['id' => 'idEquipamento'])
+            ->viaTable('sala_equipamento', ['idSala' => 'id']);
+    }
+
+    /**
+     * Get sala_equipamento relationships
+     */
+    public function getSalaEquipamentos()
+    {
+        return $this->hasMany(SalaEquipamento::class, ['idSala' => 'id']);
+    }
+
+    /**
+     * Debug method to check state
+     */
+    public function debugEstado()
+    {
+        return [
+            'estado' => $this->estado,
+            'constante_EM_USO' => self::ESTADO_EM_USO,
+            'getEstadoLabel' => $this->getEstadoLabel(),
+            'optsEstado' => self::optsEstado(),
+            'estado_in_opts' => isset(self::optsEstado()[$this->estado]),
+        ];
+    }
+>>>>>>> origin/filipe
 }

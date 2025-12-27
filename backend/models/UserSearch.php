@@ -5,27 +5,80 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\User;
+<<<<<<< HEAD
 use yii\db\Query;
 
 class UserSearch extends User
 {
     public $role;
 
+=======
+use yii\helpers\ArrayHelper;
+
+/**
+ * UserSearch represents the model behind the search form of `common\models\User`.
+ */
+class UserSearch extends User
+{
+    public $role;
+    public $created_at_start;
+    public $created_at_end;
+
+    /**
+     * {@inheritdoc}
+     */
+>>>>>>> origin/filipe
     public function rules()
     {
         return [
             [['id', 'status'], 'integer'],
+<<<<<<< HEAD
             [['username', 'email', 'created_at', 'role'], 'safe'],
         ];
     }
 
+=======
+            [['username', 'email', 'role', 'created_at_start', 'created_at_end'], 'safe'],
+            [['created_at_start', 'created_at_end'], 'date', 'format' => 'php:Y-m-d'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return ArrayHelper::merge(parent::attributeLabels(), [
+            'role' => 'Função (Role)',
+            'created_at_start' => 'Data de Criação (Início)',
+            'created_at_end' => 'Data de Criação (Fim)',
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+>>>>>>> origin/filipe
     public function scenarios()
     {
         return Model::scenarios();
     }
 
+<<<<<<< HEAD
     public function search($params)
     {
+=======
+    /**
+     * Creates data provider instance with search query applied
+     *
+     * @param array $params
+     *
+     * @return ActiveDataProvider
+     */
+    public function search($params)
+    {
+        // Buscar TODOS os utilizadores (ativos e inativos)
+>>>>>>> origin/filipe
         $query = User::find();
 
         $dataProvider = new ActiveDataProvider([
@@ -34,7 +87,11 @@ class UserSearch extends User
                 'pageSize' => 10,
             ],
             'sort' => [
+<<<<<<< HEAD
                 'defaultOrder' => ['id' => SORT_DESC],
+=======
+                'defaultOrder' => ['status' => SORT_DESC, 'id' => SORT_DESC],
+>>>>>>> origin/filipe
             ],
         ]);
 
@@ -55,7 +112,11 @@ class UserSearch extends User
 
         // Filtro por role
         if (!empty($this->role)) {
+<<<<<<< HEAD
             $userIds = (new Query())
+=======
+            $userIds = (new \yii\db\Query())
+>>>>>>> origin/filipe
                 ->select('user_id')
                 ->from('{{%auth_assignment}}')
                 ->where(['item_name' => $this->role])
@@ -64,13 +125,26 @@ class UserSearch extends User
             if (!empty($userIds)) {
                 $query->andWhere(['id' => $userIds]);
             } else {
+<<<<<<< HEAD
                 // Se não encontrar users com essa role, retorna vazio
+=======
+>>>>>>> origin/filipe
                 $query->andWhere('1=0');
             }
         }
 
+<<<<<<< HEAD
         if ($this->created_at) {
             $query->andFilterWhere(['>=', 'created_at', $this->created_at]);
+=======
+        // Filtro por intervalo de datas de criação
+        if ($this->created_at_start) {
+            $query->andFilterWhere(['>=', 'created_at', strtotime($this->created_at_start . ' 00:00:00')]);
+        }
+
+        if ($this->created_at_end) {
+            $query->andFilterWhere(['<=', 'created_at', strtotime($this->created_at_end . ' 23:59:59')]);
+>>>>>>> origin/filipe
         }
 
         return $dataProvider;

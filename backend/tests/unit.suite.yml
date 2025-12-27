@@ -1,2 +1,13 @@
+<<<<<<< HEAD
 suite_namespace: backend\tests\unit
 actor: UnitTester
+=======
+actor: UnitTester
+modules:
+  enabled:
+    - Asserts
+    - Yii2:
+        configFile: 'config/test.php'  # Ou '../config/test.php'
+        transaction: false
+        cleanup: false
+>>>>>>> origin/filipe

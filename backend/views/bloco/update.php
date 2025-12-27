@@ -35,7 +35,11 @@ $this->params['breadcrumbs'][] = 'Atualizar';
                         <div class="alert alert-warning">
                             <h6><i class="fas fa-exclamation-triangle me-2"></i>Atenção</h6>
                             <p class="mb-0">
+<<<<<<< HEAD
                                 Ao alterar o estado do bloco para <strong>"Inativo"</strong> ou <strong>"Em Manutenção"</strong>,
+=======
+                                Ao alterar o estado do bloco para <strong>"Inativo"</strong>
+>>>>>>> origin/filipe
                                 todas as salas deste bloco ficarão indisponíveis para requisições.
                             </p>
                         </div>
@@ -95,6 +99,7 @@ $this->params['breadcrumbs'][] = 'Atualizar';
                                     </div>
                                 </div>
                             </div>
+<<<<<<< HEAD
                             <div class="col-md-3">
                                 <div class="small-box bg-warning">
                                     <div class="inner">
@@ -116,6 +121,8 @@ $this->params['breadcrumbs'][] = 'Atualizar';
                                     </div>
                                 </div>
                             </div>
+=======
+>>>>>>> origin/filipe
                         </div>
 
                         <!-- Formulário de atualização -->
