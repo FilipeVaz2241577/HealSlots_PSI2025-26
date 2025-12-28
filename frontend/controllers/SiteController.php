@@ -15,14 +15,11 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
-<<<<<<< HEAD
-=======
 use common\models\Sala;
 use common\models\Requisicao;
 use common\models\RequisicaoEquipamento;
 use common\models\Equipamento;
 use common\models\SalaEquipamento;
->>>>>>> origin/filipe
 
 /**
  * Site controller
@@ -32,11 +29,8 @@ class SiteController extends Controller
     /**
      * {@inheritdoc}
      */
-<<<<<<< HEAD
-=======
     // NO SiteController.php, no array de behaviors, adicione 'cancelar-reserva':
 
->>>>>>> origin/filipe
     public function behaviors()
     {
         return [
@@ -44,15 +38,6 @@ class SiteController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-<<<<<<< HEAD
-                        'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email', 'suporte'],
-                        'allow' => true,
-                    ],
-                    [
-                        'actions' => ['logout', 'index', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento'],
-                        'allow' => true,
-                        'roles' => ['frontOfficeAccess'], // Apenas TecnicoSaude e Admin
-=======
                         'actions' => ['login', 'error', 'signup', 'request-password-reset', 'reset-password', 'verify-email', 'resend-verification-email', 'suporte', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'], // ADICIONE AS NOVAS AÇÕES
                         'allow' => true,
                     ],
@@ -60,7 +45,6 @@ class SiteController extends Controller
                         'actions' => ['logout', 'index', 'contact', 'about', 'dashboard-tecnico', 'dashboard-manutencao', 'marcacoes', 'blocos', 'salas', 'tiposequipamento', 'equipamentos', 'recursos', 'manutencoes', 'detalhe-sala', 'detalhe-equipamento', 'reserva', 'cancelar-reserva', 'remove-equipamento', 'remove-all-equipamentos', 'solicitar-manutencao-sala', 'solicitar-manutencao-equipamento'], // ADICIONE AS NOVAS AÇÕES
                         'allow' => true,
                         'roles' => ['frontOfficeAccess'],
->>>>>>> origin/filipe
                     ],
                 ],
             ],
@@ -68,15 +52,12 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
-<<<<<<< HEAD
-=======
                     'cancelar-reserva' => ['post'],
                     'remove-equipamento' => ['post'],
                     'remove-all-equipamentos' => ['post'],
                     'solicitar-manutencao' => ['post'],
                     'solicitar-manutencao-sala' => ['post'],
                     'solicitar-manutencao-equipamento' => ['post'],// ← ADICIONE AQUI
->>>>>>> origin/filipe
                 ],
             ],
         ];
@@ -119,12 +100,6 @@ class SiteController extends Controller
      *
      * @return mixed
      */
-<<<<<<< HEAD
-    public function actionSuporte()
-    {
-        $model = new ContactForm();
-
-=======
     public function actionSuporte($assunto = null, $nserie = null)
     {
         $model = new ContactForm();
@@ -139,7 +114,6 @@ class SiteController extends Controller
             $model->body = "Número de Série do equipamento: $nserie\n\n";
         }
 
->>>>>>> origin/filipe
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $supportEmail = Yii::$app->params['supportEmail'] ?? Yii::$app->params['adminEmail'];
 
@@ -193,32 +167,18 @@ class SiteController extends Controller
     }
 
     /**
-<<<<<<< HEAD
-     * Gestão de Blocos (TecnicoSaude e Admin)
-     */
-=======
      * Mostra as salas de um bloco específico
      */
     /**
      * Gestão de Blocos (TecnicoSaude e Admin)
      */
 
->>>>>>> origin/filipe
     public function actionBlocos()
     {
         if (!Yii::$app->user->can('manageRooms')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para gerir blocos.');
         }
 
-<<<<<<< HEAD
-        return $this->render('blocos');
-    }
-
-    /**
-     * Mostra as salas do Bloco A
-     */
-    public function actionSalas()
-=======
         $search = Yii::$app->request->get('search');
 
         // Buscar blocos
@@ -270,15 +230,11 @@ class SiteController extends Controller
      * Mostra as salas de um bloco específico
      */
     public function actionSalas($bloco = null)
->>>>>>> origin/filipe
     {
         if (!Yii::$app->user->can('manageRooms')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar salas.');
         }
 
-<<<<<<< HEAD
-        return $this->render('salas');
-=======
         // Se não especificar um bloco, mostrar todas as salas
         $blocoModel = $bloco ? \common\models\Bloco::findOne($bloco) : null;
 
@@ -330,26 +286,17 @@ class SiteController extends Controller
             'contagemPorEstado' => $contagemPorEstado,
             'todosBlocos' => $todosBlocos,
         ]);
->>>>>>> origin/filipe
     }
 
     /**
      * Mostra os detalhes de uma sala específica
      */
-<<<<<<< HEAD
-    public function actionDetalheSala($sala)
-=======
     public function actionDetalheSala($id)
->>>>>>> origin/filipe
     {
         if (!Yii::$app->user->can('manageRooms')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar detalhes das salas.');
         }
 
-<<<<<<< HEAD
-        return $this->render('detalheSala', [
-            'sala' => $sala
-=======
         $sala = \common\models\Sala::findOne($id);
 
         if (!$sala) {
@@ -366,28 +313,21 @@ class SiteController extends Controller
         return $this->render('detalheSala', [
             'sala' => $sala,
             'equipamentos' => $equipamentos,
->>>>>>> origin/filipe
         ]);
     }
 
     /**
      * Página de Tipos de Equipamento
      */
-<<<<<<< HEAD
-=======
     /**
      * Página de Tipos de Equipamento
      */
->>>>>>> origin/filipe
     public function actionTiposequipamento()
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar equipamentos.');
         }
 
-<<<<<<< HEAD
-        return $this->render('tiposequipamento');
-=======
         $search = Yii::$app->request->get('search');
 
         // Buscar tipos de equipamento usando o modelo do common
@@ -413,15 +353,11 @@ class SiteController extends Controller
             'tiposEquipamento' => $tiposEquipamento,
             'search' => $search,
         ]);
->>>>>>> origin/filipe
     }
 
     /**
      * Mostra os equipamentos de uma categoria específica
      */
-<<<<<<< HEAD
-    public function actionEquipamentos($categoria = null)
-=======
 
     /**
      * Mostra os equipamentos de uma categoria específica
@@ -430,16 +366,11 @@ class SiteController extends Controller
      * Mostra os equipamentos de uma categoria específica
      */
     public function actionEquipamentos($tipo = null)
->>>>>>> origin/filipe
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar equipamentos.');
         }
 
-<<<<<<< HEAD
-        return $this->render('equipamentos', [
-            'categoria' => $categoria
-=======
         // Buscar tipo de equipamento
         $tipoEquipamento = $tipo ? \common\models\TipoEquipamento::findOne($tipo) : null;
 
@@ -533,31 +464,21 @@ class SiteController extends Controller
             'categoria' => $categoria,
             'sort' => $sort,
             'order' => $order,
->>>>>>> origin/filipe
         ]);
     }
 
     /**
      * Mostra os detalhes de um equipamento específico
      */
-<<<<<<< HEAD
-    public function actionDetalheEquipamento($equipamento, $categoria = null)
-=======
     /**
      * Mostra os detalhes de um equipamento específico
      */
     public function actionDetalheEquipamento($id)
->>>>>>> origin/filipe
     {
         if (!Yii::$app->user->can('updateEquipmentStatus')) {
             throw new \yii\web\ForbiddenHttpException('Não tem permissão para visualizar detalhes dos equipamentos.');
         }
 
-<<<<<<< HEAD
-        return $this->render('detalheEquipamento', [
-            'equipamento' => $equipamento,
-            'categoria' => $categoria
-=======
         $equipamentoModel = \common\models\Equipamento::findOne($id);
 
         if (!$equipamentoModel) {
@@ -580,7 +501,6 @@ class SiteController extends Controller
             'equipamentoModel' => $equipamentoModel,
             'totalEquipamentos' => $totalEquipamentosMesmoTipo,
             'estatisticas' => $estatisticas
->>>>>>> origin/filipe
         ]);
     }
 
@@ -605,8 +525,6 @@ class SiteController extends Controller
         return $this->render('manutencoes');
     }
 
-<<<<<<< HEAD
-=======
 
     // NO SiteController.php, método actionReserva:
 
@@ -1016,7 +934,6 @@ class SiteController extends Controller
         return $this->redirect(['site/detalhe-equipamento', 'id' => $id]);
     }
 
->>>>>>> origin/filipe
     /**
      * Login action.
      *
