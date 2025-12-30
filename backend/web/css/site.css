@@ -88,3 +88,212 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+/* MQTT Notifications Styles */
+.mqtt-notification {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #007bff;
+    background: #f8f9fa;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.mqtt-notification:hover {
+    background: #e9ecef;
+    transform: translateX(2px);
+}
+
+.mqtt-notification.insert {
+    border-left-color: #28a745; /* Verde para inserções */
+    background: #f8fff8;
+}
+
+.mqtt-notification.update {
+    border-left-color: #ffc107; /* Amarelo para atualizações */
+    background: #fffdf5;
+}
+
+.mqtt-notification.delete {
+    border-left-color: #dc3545; /* Vermelho para exclusões */
+    background: #fff5f5;
+}
+
+.mqtt-message {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 5px;
+    word-break: break-word;
+}
+
+/* ============================
+   ÍCONES POR CATEGORIA
+   ============================ */
+
+/* Utilizador (USER) */
+.mqtt-notification .fa-user {
+    color: #007bff; /* Azul para utilizador */
+}
+
+/* Sala */
+.mqtt-notification .fa-door-closed {
+    color: #6f42c1; /* Roxo para sala */
+}
+
+/* Requisição */
+.mqtt-notification .fa-calendar-alt {
+    color: #20c997; /* Verde turquesa para requisição */
+}
+
+/* Manutenção */
+.mqtt-notification .fa-tools {
+    color: #fd7e14; /* Laranja para manutenção */
+}
+
+/* Bloco */
+.mqtt-notification .fa-building {
+    color: #e83e8c; /* Rosa para bloco */
+}
+
+/* Equipamento */
+.mqtt-notification .fa-desktop {
+    color: #17a2b8; /* Azul turquesa para equipamento */
+}
+
+/* Tipo de Equipamento */
+.mqtt-notification .fa-tag {
+    color: #6c757d; /* Cinza para tipo de equipamento */
+}
+
+/* Info geral (padrão) */
+.mqtt-notification .fa-info-circle {
+    color: #007bff; /* Azul padrão */
+}
+
+/* ============================
+   CORES DE STATUS ESPECÍFICOS
+   ============================ */
+
+/* Status de Utilizador */
+.mqtt-notification .status-ativo {
+    color: #28a745 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-inativo {
+    color: #ffc107 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-eliminado {
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+/* Status de Sala */
+.mqtt-notification .estado-livre {
+    color: #28a745 !important;
+    font-weight: 500;
+}
+.mqtt-notification .estado-em-uso {
+    color: #007bff !important;
+    font-weight: 500;
+}
+.mqtt-notification .estado-manutencao {
+    color: #fd7e14 !important;
+    font-weight: 500;
+}
+.mqtt-notification .estado-desativada {
+    color: #6c757d !important;
+    font-weight: 500;
+}
+
+/* Status de Requisição */
+.mqtt-notification .status-ativa {
+    color: #28a745 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-concluida {
+    color: #20c997 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-cancelada {
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+/* Status de Manutenção */
+.mqtt-notification .status-pendente {
+    color: #ffc107 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-em-curso {
+    color: #17a2b8 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-concluida-manutencao {
+    color: #28a745 !important;
+    font-weight: 500;
+}
+.mqtt-notification .status-cancelada-manutencao {
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+/* ============================
+   MELHORIAS VISUAIS
+   ============================ */
+
+/* Badge de contagem */
+#mqtt-badge {
+    font-size: 0.75em;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Timestamp */
+.mqtt-notification small {
+    font-size: 0.8em;
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Título da notificação */
+.mqtt-notification strong {
+    color: #343a40;
+    font-weight: 600;
+}
+
+/* Ícone dentro da notificação */
+.mqtt-notification .fas {
+    width: 16px;
+    text-align: center;
+}
+
+/* Animação para novas notificações */
+@keyframes newNotification {
+    0% { opacity: 0; transform: translateX(-10px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+.mqtt-notification:first-child {
+    animation: newNotification 0.3s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .mqtt-notification {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    .mqtt-message {
+        font-size: 0.85em;
+    }
+
+    .mqtt-notification small {
+        font-size: 0.75em;
+    }
+}

@@ -4,6 +4,7 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
 
 /**
  * This is the model class for table "manutencao".
@@ -242,5 +243,116 @@ class Manutencao extends ActiveRecord
         return Sala::find()
             ->where(['not in', 'id', $salasEmManutencao])
             ->all();
+    }
+
+    // ==============================================
+    // ADICIONE ESTES 3 MÉTODOS PARA MQTT
+    // ==============================================
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        // Obter dados da manutenção
+        $data = [
+            'id' => $this->id,
+            'descricao' => $this->descricao,
+            'status' => $this->status,
+            'dataInicio' => $this->dataInicio,
+            'dataFim' => $this->dataFim,
+            'equipamento_id' => $this->equipamento_id,
+            'user_id' => $this->user_id,
+            'sala_id' => $this->sala_id,
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        // Adicionar relacionamentos se disponíveis
+        if ($this->equipamento) {
+            $data['equipamento_nome'] = $this->equipamento->equipamento;
+            $data['equipamento_numeroSerie'] = $this->equipamento->numeroSerie;
+        }
+
+        if ($this->user) {
+            $data['user_nome'] = $this->user->username;
+        }
+
+        if ($this->sala) {
+            $data['sala_nome'] = $this->sala->nome;
+            if ($this->sala->bloco) {
+                $data['bloco_nome'] = $this->sala->bloco->nome;
+            }
+        }
+
+        $myJSON = json_encode($data);
+
+        // Publicar no Mosquitto
+        if ($insert) {
+            $this->FazPublishNoMosquitto("INSERT_MANUTENCAO", $myJSON);
+        } else {
+            $this->FazPublishNoMosquitto("UPDATE_MANUTENCAO", $myJSON);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        $data = ['id' => $this->id];
+        $myJSON = json_encode($data);
+
+        $this->FazPublishNoMosquitto("DELETE_MANUTENCAO", $myJSON);
+    }
+
+    /**
+     * Publica mensagem no Mosquitto MQTT
+     */
+    public function FazPublishNoMosquitto($canal, $msg)
+    {
+        try {
+            // Caminho ABSOLUTO para o phpMQTT
+            $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
+
+            if (!file_exists($phpMQTTPath)) {
+                error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
+                return false;
+            }
+
+            require_once $phpMQTTPath;
+
+            $server = "127.0.0.1";
+            $port = 1883;
+            $client_id = "yii_manutencao_" . uniqid();
+
+            $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
+
+            if ($mqtt->connect(true, null, null, null, 5)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+
+                // Log de sucesso
+                error_log("✅ MQTT Manutenção: Publicado em $canal - ID: " . json_decode($msg)->id);
+
+                // Log em arquivo para debug
+                file_put_contents(Yii::getAlias('@backend') . '/mqtt_manutencao.log',
+                    date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
+                    FILE_APPEND
+                );
+
+                return true;
+            }
+
+            error_log("❌ MQTT Manutenção: Falha na conexão para $canal");
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ MQTT Manutenção Exception: " . $e->getMessage());
+            return false;
+        }
     }
 }

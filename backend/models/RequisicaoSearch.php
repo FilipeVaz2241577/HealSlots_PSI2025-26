@@ -5,16 +5,12 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\Requisicao;
-use backend\mosquitto\phpMQTT;
 
 class RequisicaoSearch extends Requisicao
 {
     public $sala_nome;
     public $user_name;
     public $bloco_nome;
-    // Remover as propriedades range e manter apenas as datas simples
-    // public $dataInicio_range;
-    // public $dataFim_range;
 
     /**
      * {@inheritdoc}
@@ -25,8 +21,6 @@ class RequisicaoSearch extends Requisicao
             [['id', 'user_id', 'sala_id'], 'integer'],
             [['status'], 'string'],
             [['dataInicio', 'dataFim', 'sala_nome', 'user_name', 'bloco_nome'], 'safe'],
-            // Remover range das regras
-            // [['dataInicio_range', 'dataFim_range'], 'safe'],
         ];
     }
 
@@ -155,123 +149,6 @@ class RequisicaoSearch extends Requisicao
         return null;
     }
 
-    public function afterSave($insert, $changedAttributes)
-    {
-        parent::afterSave($insert, $changedAttributes);
-
-        // Obter dados da requisição
-        $id = $this->id;
-        $status = $this->status;
-        $dataInicio = $this->dataInicio;
-        $dataFim = $this->dataFim;
-        $user_id = $this->user_id;
-        $sala_id = $this->sala_id;
-        $observacoes = $this->observacoes;
-
-        // Criar objeto JSON com dados completos
-        $myObj = new \stdClass();
-        $myObj->id = $id;
-        $myObj->status = $status;
-        $myObj->dataInicio = $dataInicio;
-        $myObj->dataFim = $dataFim;
-        $myObj->user_id = $user_id;
-        $myObj->sala_id = $sala_id;
-        $myObj->observacoes = $observacoes;
-
-        // Adicionar relacionamentos se disponíveis
-        if ($this->sala) {
-            $myObj->sala_nome = $this->sala->nome;
-            $myObj->sala_capacidade = $this->sala->capacidade;
-
-            // Adicionar bloco se disponível
-            if ($this->sala->bloco) {
-                $myObj->bloco_nome = $this->sala->bloco->nome;
-            }
-        }
-
-        if ($this->user) {
-            $myObj->user_name = $this->user->username;
-            $myObj->user_email = $this->user->email;
-        }
-
-        $myJSON = json_encode($myObj);
-
-        // Publicar no Mosquitto
-        if ($insert) {
-            $this->FazPublishNoMosquitto("INSERT_REQUISICAO", $myJSON);
-        } else {
-            $this->FazPublishNoMosquitto("UPDATE_REQUISICAO", $myJSON);
-
-            // Notificação específica para mudança de status
-            if (isset($changedAttributes['status'])) {
-                $oldStatus = $changedAttributes['status'];
-                $newStatus = $this->status;
-
-                $statusObj = new \stdClass();
-                $statusObj->id = $this->id;
-                $statusObj->old_status = $oldStatus;
-                $statusObj->new_status = $newStatus;
-                $statusObj->dataInicio = $dataInicio;
-                $statusObj->sala_id = $sala_id;
-
-                if ($this->sala) {
-                    $statusObj->sala_nome = $this->sala->nome;
-                }
-
-                $statusJSON = json_encode($statusObj);
-                $this->FazPublishNoMosquitto("STATUS_CHANGED_REQUISICAO", $statusJSON);
-            }
-        }
-    }
-
-    public function afterDelete()
-    {
-        parent::afterDelete();
-
-        $requisicao_id = $this->id;
-        $myObj = new \stdClass();
-        $myObj->id = $requisicao_id;
-
-        // Adicionar informações adicionais para contexto
-        $myObj->dataInicio = $this->dataInicio;
-        $myObj->sala_id = $this->sala_id;
-
-        if ($this->sala) {
-            $myObj->sala_nome = $this->sala->nome;
-        }
-
-        $myJSON = json_encode($myObj);
-
-        $this->FazPublishNoMosquitto("DELETE_REQUISICAO", $myJSON);
-    }
-
-    public function FazPublishNoMosquitto($canal, $msg)
-    {
-        $server = "127.0.0.1";   // ou localhost
-        $port = 1883;
-        $username = "";          // se tiver autenticação
-        $password = "";
-        $client_id = "phpMQTT-publisher-requisicao-" . uniqid(); // ID único
-
-        $mqtt = new phpMQTT($server, $port, $client_id);
-
-        if ($mqtt->connect(true, NULL, $username, $password)) {
-            $mqtt->publish($canal, $msg, 0);
-            $mqtt->close();
-
-            // Log de sucesso (opcional)
-            file_put_contents("debug_mosquitto_requisicao_success.log",
-                "[" . date('Y-m-d H:i:s') . "] Publicado em $canal\n",
-                FILE_APPEND);
-
-            return true;
-        } else {
-            // Log de erro
-            error_log("Falha na conexão MQTT para o canal: $canal");
-            file_put_contents("debug_mosquitto_requisicao_error.log",
-                "[" . date('Y-m-d H:i:s') . "] Time out ao publicar em $canal\n",
-                FILE_APPEND);
-            return false;
-        }
-    }
+    // REMOVA os métodos afterSave, afterDelete e FazPublishNoMosquitto!
+    // Eles devem estar APENAS no modelo principal (common/models/Requisicao.php)
 }

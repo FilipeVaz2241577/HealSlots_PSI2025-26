@@ -1,0 +1,8 @@
+2025-12-29 14:52:11 | INSERT_BLOCO | {"id":2,"nome":"Bloco F","estado":"ativo"}
+2025-12-29 14:52:25 | DELETE_BLOCO | {"id":2}
+2025-12-30 18:05:14 | INSERT_BLOCO | {"id":3,"nome":"Bloco B","estado":"ativo"}
+2025-12-30 18:08:45 | INSERT_BLOCO | {"id":4,"nome":"Bloco C","estado":"ativo"}
+2025-12-30 18:32:42 | INSERT_BLOCO | {"id":5,"nome":"Bloco D","estado":"ativo"}
+2025-12-30 18:32:57 | DELETE_BLOCO | {"id":5}
+2025-12-30 18:53:08 | INSERT_BLOCO | {"id":6,"nome":"Bloco E","estado":"ativo"}
+2025-12-30 18:53:13 | DELETE_BLOCO | {"id":6}

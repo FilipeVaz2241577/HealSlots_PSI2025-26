@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
 
 /**
  * This is the model class for table "bloco".
@@ -15,7 +16,6 @@ use Yii;
  */
 class Bloco extends \yii\db\ActiveRecord
 {
-
     /**
      * ENUM field values
      */
@@ -144,4 +144,97 @@ class Bloco extends \yii\db\ActiveRecord
         $this->estado = self::ESTADO_DESATIVADO;
     }
 
+    // ==============================================
+    // ADICIONE ESTES 3 MÉTODOS PARA MQTT
+    // ==============================================
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        // Obter dados do registo
+        $id = $this->id;
+        $nome = $this->nome;
+        $estado = $this->estado;
+
+        // Criar objeto JSON
+        $myObj = new \stdClass();
+        $myObj->id = $id;
+        $myObj->nome = $nome;
+        $myObj->estado = $estado;
+
+        $myJSON = json_encode($myObj);
+
+        // Publicar no Mosquitto
+        if ($insert) {
+            $this->FazPublishNoMosquitto("INSERT_BLOCO", $myJSON);
+        } else {
+            $this->FazPublishNoMosquitto("UPDATE_BLOCO", $myJSON);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        $bloco_id = $this->id;
+        $myObj = new \stdClass();
+        $myObj->id = $bloco_id;
+        $myJSON = json_encode($myObj);
+
+        $this->FazPublishNoMosquitto("DELETE_BLOCO", $myJSON);
+    }
+
+    /**
+     * Publica mensagem no Mosquitto MQTT
+     */
+    public function FazPublishNoMosquitto($canal, $msg)
+    {
+        try {
+            // Caminho ABSOLUTO para o phpMQTT
+            $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
+
+            if (!file_exists($phpMQTTPath)) {
+                error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
+                return false;
+            }
+
+            require_once $phpMQTTPath;
+
+            $server = "127.0.0.1";
+            $port = 1883;
+            $client_id = "yii_bloco_" . uniqid();
+
+            $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
+
+            if ($mqtt->connect(true, null, null, null, 5)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+
+                // Log de sucesso
+                error_log("✅ MQTT Bloco: Publicado em $canal - ID: " . json_decode($msg)->id);
+
+                // Log em arquivo para debug
+                file_put_contents(Yii::getAlias('@backend') . '/mqtt_bloco.log',
+                    date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
+                    FILE_APPEND
+                );
+
+                return true;
+            }
+
+            error_log("❌ MQTT Bloco: Falha na conexão para $canal");
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ MQTT Bloco Exception: " . $e->getMessage());
+            return false;
+        }
+    }
 }

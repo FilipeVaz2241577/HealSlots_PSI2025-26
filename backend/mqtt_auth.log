@@ -1,0 +1,5 @@
+2025-12-29 15:50:40 | USER_LOGOUT_BACKEND | {"user_id":1,"username":"Carreira","email":"carreira@gmail.com","ip_address":"::1","timestamp":"2025-12-29 15:50:40","location":"backend","roles":["Admin"]}
+2025-12-29 15:51:05 | USER_LOGOUT_BACKEND | {"user_id":1,"username":"Carreira","email":"carreira@gmail.com","ip_address":"::1","timestamp":"2025-12-29 15:51:05","location":"backend","roles":["Admin"]}
+2025-12-29 15:51:15 | LOGIN_FAILED_BACKEND | {"username":"carreira","success":false,"reason":"invalid_credentials","ip_address":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36 Edg\/143.0.0.0","timestamp":"2025-12-29 15:51:15","location":"backend"}
+2025-12-29 15:55:13 | USER_LOGOUT_BACKEND | {"user_id":1,"username":"Carreira","email":"carreira@gmail.com","ip_address":"::1","timestamp":"2025-12-29 15:55:13","location":"backend","roles":["Admin"]}
+2025-12-30 18:56:35 | USER_LOGOUT_BACKEND | {"user_id":1,"username":"Carreira","email":"carreira@gmail.com","ip_address":"::1","timestamp":"2025-12-30 18:56:35","location":"backend","roles":["Admin"]}

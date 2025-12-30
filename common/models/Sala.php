@@ -4,8 +4,7 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
-use yii\behaviors\TimestampBehavior;
-use yii\behaviors\BlameableBehavior;
+use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
 
 /**
  * This is the model class for table "sala".
@@ -37,8 +36,7 @@ class Sala extends ActiveRecord
      */
     public function behaviors()
     {
-        return [
-        ];
+        return [];
     }
 
     /**
@@ -263,5 +261,132 @@ class Sala extends ActiveRecord
             'optsEstado' => self::optsEstado(),
             'estado_in_opts' => isset(self::optsEstado()[$this->estado]),
         ];
+    }
+
+    // ==============================================
+    // ADICIONE ESTES 3 MÉTODOS PARA MQTT
+    // ==============================================
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        // Obter dados da sala
+        $data = [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'estado' => $this->estado,
+            'bloco_id' => $this->bloco_id,
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        // Adicionar bloco se disponível
+        if ($this->bloco) {
+            $data['bloco_nome'] = $this->bloco->nome;
+            $data['bloco_estado'] = $this->bloco->estado;
+        }
+
+        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        // Publicar no Mosquitto
+        if ($insert) {
+            $this->FazPublishNoMosquitto("INSERT_SALA", $myJSON);
+        } else {
+            $this->FazPublishNoMosquitto("UPDATE_SALA", $myJSON);
+
+            // Notificação específica para mudança de estado
+            if (isset($changedAttributes['estado'])) {
+                $oldEstado = $changedAttributes['estado'];
+                $newEstado = $this->estado;
+
+                $estadoData = [
+                    'id' => $this->id,
+                    'nome' => $this->nome,
+                    'old_estado' => $oldEstado,
+                    'new_estado' => $newEstado,
+                    'bloco_id' => $this->bloco_id,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+
+                if ($this->bloco) {
+                    $estadoData['bloco_nome'] = $this->bloco->nome;
+                }
+
+                $estadoJSON = json_encode($estadoData, JSON_UNESCAPED_UNICODE);
+                $this->FazPublishNoMosquitto("ESTADO_CHANGED_SALA", $estadoJSON);
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        $data = [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'bloco_id' => $this->bloco_id,
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->bloco) {
+            $data['bloco_nome'] = $this->bloco->nome;
+        }
+
+        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $this->FazPublishNoMosquitto("DELETE_SALA", $myJSON);
+    }
+
+    /**
+     * Publica mensagem no Mosquitto MQTT
+     */
+    public function FazPublishNoMosquitto($canal, $msg)
+    {
+        try {
+            // Caminho ABSOLUTO para o phpMQTT
+            $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
+
+            if (!file_exists($phpMQTTPath)) {
+                error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
+                return false;
+            }
+
+            require_once $phpMQTTPath;
+
+            $server = "127.0.0.1";
+            $port = 1883;
+            $client_id = "yii_sala_" . uniqid();
+
+            $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
+
+            if ($mqtt->connect(true, null, null, null, 5)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+
+                // Log de sucesso
+                error_log("✅ MQTT Sala: Publicado em $canal - ID: " . json_decode($msg)->id);
+
+                // Log em arquivo para debug
+                file_put_contents(Yii::getAlias('@backend') . '/mqtt_sala.log',
+                    date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
+                    FILE_APPEND
+                );
+
+                return true;
+            }
+
+            error_log("❌ MQTT Sala: Falha na conexão para $canal");
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ MQTT Sala Exception: " . $e->getMessage());
+            return false;
+        }
     }
 }
