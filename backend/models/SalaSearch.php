@@ -61,4 +61,7 @@ class SalaSearch extends Sala
 
         return $dataProvider;
     }
+
+    // REMOVA os métodos afterSave, afterDelete e FazPublishNoMosquitto!
+    // Eles devem estar APENAS no modelo principal (common/models/Sala.php)
 }

@@ -276,3 +276,14 @@
     border-color: var(--primary);
 }
 
+/* Ícone específico para notificações de sala */
+.mqtt-notification .fa-door-closed {
+    color: #6f42c1; /* Cor roxa para sala */
+}
+
+/* Para estado específico */
+.mqtt-notification .estado-livre { color: #28a745; }
+.mqtt-notification .estado-em-uso { color: #ffc107; }
+.mqtt-notification .estado-manutencao { color: #dc3545; }
+.mqtt-notification .estado-desativada { color: #6c757d; }
+

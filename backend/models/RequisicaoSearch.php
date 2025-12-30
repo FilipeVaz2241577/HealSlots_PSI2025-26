@@ -11,9 +11,6 @@ class RequisicaoSearch extends Requisicao
     public $sala_nome;
     public $user_name;
     public $bloco_nome;
-    // Remover as propriedades range e manter apenas as datas simples
-    // public $dataInicio_range;
-    // public $dataFim_range;
 
     /**
      * {@inheritdoc}
@@ -24,8 +21,6 @@ class RequisicaoSearch extends Requisicao
             [['id', 'user_id', 'sala_id'], 'integer'],
             [['status'], 'string'],
             [['dataInicio', 'dataFim', 'sala_nome', 'user_name', 'bloco_nome'], 'safe'],
-            // Remover range das regras
-            // [['dataInicio_range', 'dataFim_range'], 'safe'],
         ];
     }
 
@@ -151,7 +146,9 @@ class RequisicaoSearch extends Requisicao
                 }
             }
         }
-
         return null;
     }
+
+    // REMOVA os métodos afterSave, afterDelete e FazPublishNoMosquitto!
+    // Eles devem estar APENAS no modelo principal (common/models/Requisicao.php)
 }

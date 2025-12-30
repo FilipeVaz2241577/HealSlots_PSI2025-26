@@ -1,0 +1,11 @@
+2025-12-29 15:19:12 | DELETE_REQUISICAO | {"id":22,"dataInicio":"2025-12-18T16:45","sala_id":2,"sala_nome":"Sala A2"}
+2025-12-30 18:16:30 | DELETE_REQUISICAO | {"id":23,"dataInicio":"2025-12-18T15:34","sala_id":2,"sala_nome":"Sala A2"}
+2025-12-30 18:16:37 | INSERT_REQUISICAO | {"id":24,"status":"Ativa","dataInicio":"2025-12-30 18:16:00","dataFim":null,"user_id":1,"sala_id":"2
+2025-12-30 18:16:46 | UPDATE_REQUISICAO | {"id":24,"status":"Cancelada","dataInicio":"2025-12-30 18:16:00","dataFim":null,"user_id":1,"sala_id
+2025-12-30 18:16:46 | STATUS_CHANGED_REQUISICAO | {"id":24,"old_status":"Ativa","new_status":"Cancelada","dataInicio":"2025-12-30 18:16:00","sala_id":
+2025-12-30 18:34:29 | DELETE_REQUISICAO | {"id":21,"dataInicio":"2025-12-17T12:05","sala_id":2,"sala_nome":"Sala A2"}
+2025-12-30 18:34:43 | DELETE_REQUISICAO | {"id":24,"dataInicio":"2025-12-30T18:16","sala_id":2,"sala_nome":"Sala A2"}
+2025-12-30 18:55:41 | INSERT_REQUISICAO | {"id":25,"status":"Ativa","dataInicio":"2025-12-30 18:55:00","dataFim":null,"user_id":1,"sala_id":"1
+2025-12-30 18:55:53 | UPDATE_REQUISICAO | {"id":25,"status":"Conclu\u00edda","dataInicio":"2025-12-30 18:55:00","dataFim":"2025-12-30 18:55:53
+2025-12-30 18:55:53 | STATUS_CHANGED_REQUISICAO | {"id":25,"old_status":"Ativa","new_status":"Conclu\u00edda","dataInicio":"2025-12-30 18:55:00","sala
+2025-12-30 18:56:03 | DELETE_REQUISICAO | {"id":25,"dataInicio":"2025-12-30T18:55","sala_id":1,"sala_nome":"Sala A1"}

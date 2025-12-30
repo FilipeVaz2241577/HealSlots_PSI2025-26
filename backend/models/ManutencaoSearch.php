@@ -94,4 +94,5 @@ class ManutencaoSearch extends Manutencao
 
         return $dataProvider;
     }
+
 }

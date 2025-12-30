@@ -111,4 +111,7 @@ class UserSearch extends User
 
         return $dataProvider;
     }
+
+    // REMOVA os métodos afterSave, afterDelete e FazPublishNoMosquitto!
+    // Eles devem estar APENAS no modelo principal (common/models/User.php)
 }

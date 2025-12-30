@@ -7,6 +7,7 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
 
 /**
  * User model
@@ -143,6 +144,113 @@ class User extends ActiveRecord implements IdentityInterface
                 $auth->assign($role, $this->id);
             }
         }
+
+        // ==============================================
+        // ADICIONE O CÓDIGO MQTT AQUI (mantenha o existente)
+        // ==============================================
+
+        // Obter dados do utilizador
+        $data = [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'status' => $this->status,
+            'status_text' => $this->getStatusLabel(),
+            'created_at' => date('Y-m-d H:i:s', $this->created_at),
+            'updated_at' => date('Y-m-d H:i:s', $this->updated_at),
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        // Obter roles do utilizador
+        $auth = Yii::$app->authManager;
+        $userRoles = $auth->getRolesByUser($this->id);
+        $rolesArray = [];
+        foreach ($userRoles as $roleName => $role) {
+            $rolesArray[] = $roleName;
+        }
+        $data['roles'] = $rolesArray;
+
+        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        // Publicar no Mosquitto
+        if ($insert) {
+            $this->FazPublishNoMosquitto("INSERT_USER", $myJSON);
+        } else {
+            $this->FazPublishNoMosquitto("UPDATE_USER", $myJSON);
+
+            // Notificação específica para mudança de status
+            if (isset($changedAttributes['status'])) {
+                $oldStatus = $changedAttributes['status'];
+                $newStatus = $this->status;
+
+                $statusData = [
+                    'id' => $this->id,
+                    'username' => $this->username,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'old_status_text' => $this->getStatusLabelFromCode($oldStatus),
+                    'new_status_text' => $this->getStatusLabel(),
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+
+                $statusJSON = json_encode($statusData, JSON_UNESCAPED_UNICODE);
+                $this->FazPublishNoMosquitto("STATUS_CHANGED_USER", $statusJSON);
+            }
+
+            // Notificação específica para mudança de email
+            if (isset($changedAttributes['email'])) {
+                $oldEmail = $changedAttributes['email'];
+                $newEmail = $this->email;
+
+                $emailData = [
+                    'id' => $this->id,
+                    'username' => $this->username,
+                    'old_email' => $oldEmail,
+                    'new_email' => $newEmail,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+
+                $emailJSON = json_encode($emailData, JSON_UNESCAPED_UNICODE);
+                $this->FazPublishNoMosquitto("EMAIL_CHANGED_USER", $emailJSON);
+            }
+        }
+    }
+
+    /**
+     * Get status label from status code
+     */
+    private function getStatusLabelFromCode($status)
+    {
+        $statuses = [
+            self::STATUS_ACTIVE => 'Ativo',
+            self::STATUS_INACTIVE => 'Inativo',
+            self::STATUS_DELETED => 'Eliminado',
+        ];
+
+        return $statuses[$status] ?? 'Desconhecido';
+    }
+
+    /**
+     * After delete
+     */
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        // ==============================================
+        // ADICIONE O CÓDIGO MQTT AQUI (mantenha o existente)
+        // ==============================================
+
+        $data = [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'deleted_at' => date('Y-m-d H:i:s'),
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $this->FazPublishNoMosquitto("DELETE_USER", $myJSON);
     }
 
     /**
@@ -412,5 +520,56 @@ class User extends ActiveRecord implements IdentityInterface
     public function getUpdatedDate()
     {
         return Yii::$app->formatter->asDatetime($this->updated_at);
+    }
+
+    // ==============================================
+    // ADICIONE ESTE MÉTODO PARA MQTT
+    // ==============================================
+
+    /**
+     * Publica mensagem no Mosquitto MQTT
+     */
+    public function FazPublishNoMosquitto($canal, $msg)
+    {
+        try {
+            // Caminho ABSOLUTO para o phpMQTT
+            $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
+
+            if (!file_exists($phpMQTTPath)) {
+                error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
+                return false;
+            }
+
+            require_once $phpMQTTPath;
+
+            $server = "127.0.0.1";
+            $port = 1883;
+            $client_id = "yii_user_" . uniqid();
+
+            $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
+
+            if ($mqtt->connect(true, null, null, null, 5)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+
+                // Log de sucesso
+                error_log("✅ MQTT User: Publicado em $canal - ID: " . json_decode($msg)->id);
+
+                // Log em arquivo para debug
+                file_put_contents(Yii::getAlias('@backend') . '/mqtt_user.log',
+                    date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
+                    FILE_APPEND
+                );
+
+                return true;
+            }
+
+            error_log("❌ MQTT User: Falha na conexão para $canal");
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ MQTT User Exception: " . $e->getMessage());
+            return false;
+        }
     }
 }

@@ -66,7 +66,7 @@ class m251028_135458_init_rbac_roles extends Migration
         $auth->add($viewResources);
 
         $manageRooms = $auth->createPermission('manageRooms');
-        $manageRooms->description = 'Gerir Salas e Blocos';
+        $manageRooms->description = 'Gerir Salas e blocos';
         $auth->add($manageRooms);
 
         $reportIssues = $auth->createPermission('reportIssues');

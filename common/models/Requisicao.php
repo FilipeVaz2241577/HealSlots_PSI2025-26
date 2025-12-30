@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
 
 /**
  * This is the model class for table "requisicao".
@@ -319,12 +320,74 @@ class Requisicao extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    /**
+     * {@inheritdoc}
+     */
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
 
         // Atualiza o estado da sala sempre que salvar uma requisição
         $this->atualizarEstadoSala();
+
+        // ==============================================
+        // CÓDIGO MQTT PARA REQUISIÇÃO
+        // ==============================================
+
+        // Obter dados da requisição
+        $data = [
+            'id' => $this->id,
+            'status' => $this->status,
+            'dataInicio' => $this->dataInicio,
+            'dataFim' => $this->dataFim,
+            'user_id' => $this->user_id,
+            'sala_id' => $this->sala_id,
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        // Adicionar relacionamentos se disponíveis
+        if ($this->sala) {
+            $data['sala_nome'] = $this->sala->nome;
+            if ($this->sala->bloco) {
+                $data['bloco_nome'] = $this->sala->bloco->nome;
+            }
+        }
+
+        if ($this->user) {
+            $data['user_nome'] = $this->user->username;
+            $data['user_email'] = $this->user->email;
+        }
+
+        $myJSON = json_encode($data);
+
+        // Publicar no Mosquitto
+        if ($insert) {
+            $this->FazPublishNoMosquitto("INSERT_REQUISICAO", $myJSON);
+        } else {
+            $this->FazPublishNoMosquitto("UPDATE_REQUISICAO", $myJSON);
+
+            // Notificação específica para mudança de status
+            if (isset($changedAttributes['status'])) {
+                $oldStatus = $changedAttributes['status'];
+                $newStatus = $this->status;
+
+                $statusData = [
+                    'id' => $this->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'dataInicio' => $this->dataInicio,
+                    'sala_id' => $this->sala_id,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+
+                if ($this->sala) {
+                    $statusData['sala_nome'] = $this->sala->nome;
+                }
+
+                $statusJSON = json_encode($statusData);
+                $this->FazPublishNoMosquitto("STATUS_CHANGED_REQUISICAO", $statusJSON);
+            }
+        }
     }
 
     /**
@@ -340,6 +403,23 @@ class Requisicao extends \yii\db\ActiveRecord
             $sala->estado = Sala::ESTADO_LIVRE;
             $sala->save(false, ['estado']);
         }
+
+        // ==============================================
+        // CÓDIGO MQTT PARA EXCLUSÃO DE REQUISIÇÃO
+        // ==============================================
+
+        $data = [
+            'id' => $this->id,
+            'dataInicio' => $this->dataInicio,
+            'sala_id' => $this->sala_id
+        ];
+
+        if ($this->sala) {
+            $data['sala_nome'] = $this->sala->nome;
+        }
+
+        $myJSON = json_encode($data);
+        $this->FazPublishNoMosquitto("DELETE_REQUISICAO", $myJSON);
     }
 
     /**
@@ -445,6 +525,57 @@ class Requisicao extends \yii\db\ActiveRecord
     {
         if (!$this->validarDisponibilidade()) {
             $this->addError('sala_id', 'A sala não está disponível no período solicitado.');
+        }
+    }
+
+    // ==============================================
+    // ADICIONE ESTE MÉTODO PARA MQTT
+    // ==============================================
+
+    /**
+     * Publica mensagem no Mosquitto MQTT
+     */
+    public function FazPublishNoMosquitto($canal, $msg)
+    {
+        try {
+            // Caminho ABSOLUTO para o phpMQTT
+            $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
+
+            if (!file_exists($phpMQTTPath)) {
+                error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
+                return false;
+            }
+
+            require_once $phpMQTTPath;
+
+            $server = "127.0.0.1";
+            $port = 1883;
+            $client_id = "yii_requisicao_" . uniqid();
+
+            $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
+
+            if ($mqtt->connect(true, null, null, null, 5)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+
+                // Log de sucesso
+                error_log("✅ MQTT Requisição: Publicado em $canal - ID: " . json_decode($msg)->id);
+
+                // Log em arquivo para debug
+                file_put_contents(Yii::getAlias('@backend') . '/mqtt_requisicao.log',
+                    date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
+                    FILE_APPEND
+                );
+
+                return true;
+            }
+
+            error_log("❌ MQTT Requisição: Falha na conexão para $canal");
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ MQTT Requisição Exception: " . $e->getMessage());
+            return false;
         }
     }
 }

@@ -1,0 +1,4 @@
+2025-12-30 18:56:19 | UPDATE_USER | {"id":1,"username":"Carreiraa","email":"carreira@gmail.com","status":"10","status_text":"Ativo","cre
+2025-12-30 18:56:19 | STATUS_CHANGED_USER | {"id":1,"username":"Carreiraa","old_status":10,"new_status":"10","old_status_text":"Ativo","new_stat
+2025-12-30 18:56:31 | UPDATE_USER | {"id":1,"username":"Carreira","email":"carreira@gmail.com","status":"10","status_text":"Ativo","crea
+2025-12-30 18:56:31 | STATUS_CHANGED_USER | {"id":1,"username":"Carreira","old_status":10,"new_status":"10","old_status_text":"Ativo","new_statu

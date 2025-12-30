@@ -45,4 +45,7 @@ class BlocoSearch extends Bloco
 
         return $dataProvider;
     }
+
+    // REMOVA os métodos afterSave, afterDelete e FazPublishNoMosquitto!
+    // Eles devem estar APENAS no modelo principal (common/models/Bloco.php)
 }
