@@ -20,7 +20,7 @@ class Bloco extends \yii\db\ActiveRecord
      * ENUM field values
      */
     const ESTADO_ATIVO = 'ativo';
-    const ESTADO_DESATIVADO = 'desativado';
+    const ESTADO_DESATIVADO = 'inativo';
 
     /**
      * {@inheritdoc}
@@ -76,7 +76,7 @@ class Bloco extends \yii\db\ActiveRecord
     {
         return [
             self::ESTADO_ATIVO => 'Ativo',
-            self::ESTADO_DESATIVADO => 'Desativado',
+            self::ESTADO_DESATIVADO => 'inativo',
         ];
     }
 

@@ -23,42 +23,6 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
         </div>
     </div>
 
-    <!-- Estatísticas com SmallBox -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $totalUsersCount ?? 0,
-                'text' => 'Total Utilizadores',
-                'icon' => 'fas fa-users',
-                'theme' => 'info'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $activeUsersCount ?? 0,
-                'text' => 'Utilizadores Ativos',
-                'icon' => 'fas fa-user-check',
-                'theme' => 'success'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $inactiveUsersCount ?? 0,
-                'text' => 'Utilizadores Inativos',
-                'icon' => 'fas fa-user-clock',
-                'theme' => 'warning'
-            ]) ?>
-        </div>
-        <div class="col-lg-3 col-6">
-            <?= SmallBox::widget([
-                'title' => $differentRolesCount ?? 0,
-                'text' => 'Diferentes Roles',
-                'icon' => 'fas fa-user-shield',
-                'theme' => 'primary'
-            ]) ?>
-        </div>
-    </div>
-
     <!-- Card Principal -->
     <div class="row">
         <div class="col-12">
@@ -262,6 +226,42 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Estatísticas com SmallBox -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+                'title' => $totalUsersCount ?? 0,
+                'text' => 'Total Utilizadores',
+                'icon' => 'fas fa-users',
+                'theme' => 'info'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+                'title' => $activeUsersCount ?? 0,
+                'text' => 'Utilizadores Ativos',
+                'icon' => 'fas fa-user-check',
+                'theme' => 'success'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+                'title' => $inactiveUsersCount ?? 0,
+                'text' => 'Utilizadores Inativos',
+                'icon' => 'fas fa-user-clock',
+                'theme' => 'warning'
+        ]) ?>
+    </div>
+    <div class="col-lg-3 col-6">
+        <?= SmallBox::widget([
+                'title' => $differentRolesCount ?? 0,
+                'text' => 'Diferentes Roles',
+                'icon' => 'fas fa-user-shield',
+                'theme' => 'primary'
+        ]) ?>
     </div>
 </div>
 

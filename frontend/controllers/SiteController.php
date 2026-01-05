@@ -186,7 +186,6 @@ class SiteController extends Controller
         $totalBlocos = count($blocos);
         $totalSalas = 0;
         $blocosAtivos = 0;
-        $blocosManutencao = 0;
         $blocosDesativados = 0;
         $blocosUso = 0;
 
@@ -195,8 +194,6 @@ class SiteController extends Controller
 
             if ($bloco->isEstadoAtivo()) {
                 $blocosAtivos++;
-            } elseif ($bloco->isEstadoManutencao()) {
-                $blocosManutencao++;
             } elseif ($bloco->isEstadoDesativado()) {
                 $blocosDesativados++;
             } elseif ($bloco->isEstadoUso()) {
@@ -210,7 +207,6 @@ class SiteController extends Controller
             'totalBlocos' => $totalBlocos,
             'totalSalas' => $totalSalas,
             'blocosAtivos' => $blocosAtivos,
-            'blocosManutencao' => $blocosManutencao,
             'blocosDesativados' => $blocosDesativados,
             'blocosUso' => $blocosUso,
         ]);
