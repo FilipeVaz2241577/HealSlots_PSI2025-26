@@ -17,8 +17,16 @@ use common\models\Equipamento;
 use common\models\Sala;
 use common\models\SalaEquipamento;
 
+/**
+ * Controlador para gestão de Manutenções
+ * Permite CRUD de manutenções de equipamentos e salas, com fluxo de estados
+ */
 class ManutencaoController extends Controller
 {
+    /**
+     * Configura comportamentos do controlador
+     * Controla acesso por roles e valida métodos HTTP
+     */
     public function behaviors()
     {
         return [
@@ -46,7 +54,8 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Método auxiliar para obter técnicos
+     * Obtém lista de técnicos (assistentes de manutenção)
+     * @return array Lista de utilizadores com role 'AssistenteManutencao'
      */
     private function getTecnicos()
     {
@@ -58,22 +67,27 @@ class ManutencaoController extends Controller
             ->all();
     }
 
+    /**
+     * Lista todas as manutenções com pesquisa e estatísticas
+     * Inclui estatísticas por estado e itens em manutenção sem registo formal
+     */
     public function actionIndex()
     {
+        // Modelo de pesquisa para filtragem de manutenções
         $searchModel = new ManutencaoSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        // Estatísticas
-        $totalManutencoes = Manutencao::find()->count();
-        $manutencoesPendentes = Manutencao::find()->where(['status' => Manutencao::STATUS_PENDENTE])->count();
-        $manutencoesCurso = Manutencao::find()->where(['status' => Manutencao::STATUS_EM_CURSO])->count();
-        $manutencoesConcluidas = Manutencao::find()->where(['status' => Manutencao::STATUS_CONCLUIDA])->count();
+        // Estatísticas gerais de manutenções
+        $totalManutencoes = Manutencao::find()->count();                        // Total de manutenções
+        $manutencoesPendentes = Manutencao::find()->where(['status' => Manutencao::STATUS_PENDENTE])->count();    // Pendentes
+        $manutencoesCurso = Manutencao::find()->where(['status' => Manutencao::STATUS_EM_CURSO])->count();        // Em curso
+        $manutencoesConcluidas = Manutencao::find()->where(['status' => Manutencao::STATUS_CONCLUIDA])->count();  // Concluídas
 
-        // Itens em manutenção sem registo formal
-        $equipamentosSemManutencao = Equipamento::getEquipamentosManutencaoSemRegisto();
-        $salasSemManutencao = Sala::getSalasManutencaoSemRegisto();
-        $countEquipamentos = count($equipamentosSemManutencao);
-        $countSalas = count($salasSemManutencao);
+        // Deteção de itens em estado de manutenção sem registo formal
+        $equipamentosSemManutencao = Equipamento::getEquipamentosManutencaoSemRegisto(); // Equipamentos em manutenção sem registo
+        $salasSemManutencao = Sala::getSalasManutencaoSemRegisto();                     // Salas em manutenção sem registo
+        $countEquipamentos = count($equipamentosSemManutencao);                         // Contagem de equipamentos sem registo
+        $countSalas = count($salasSemManutencao);                                       // Contagem de salas sem registo
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -89,6 +103,10 @@ class ManutencaoController extends Controller
         ]);
     }
 
+    /**
+     * Exibe detalhes de uma manutenção específica
+     * @param int $id ID da manutenção a visualizar
+     */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -96,17 +114,23 @@ class ManutencaoController extends Controller
         ]);
     }
 
+    /**
+     * Cria uma nova manutenção
+     * Pode ser criada a partir de um equipamento ou sala específica
+     * @param int|null $equipamento_id ID do equipamento (opcional)
+     * @param int|null $sala_id ID da sala (opcional)
+     */
     public function actionCreate($equipamento_id = null, $sala_id = null)
     {
         $model = new Manutencao();
 
-        // Preenche automaticamente se vier de um dos botões
+        // Preenche automaticamente se criar a partir de um equipamento
         if ($equipamento_id) {
             $equipamento = Equipamento::findOne($equipamento_id);
             if ($equipamento) {
                 $model->equipamento_id = $equipamento_id;
 
-                // Verificar se o equipamento já está em manutenção
+                // Verifica se o equipamento já está em manutenção ativa
                 $manutencaoAtiva = Manutencao::find()
                     ->where(['equipamento_id' => $equipamento_id])
                     ->andWhere(['status' => [Manutencao::STATUS_PENDENTE, Manutencao::STATUS_EM_CURSO]])
@@ -126,21 +150,19 @@ class ManutencaoController extends Controller
                     $model->sala_id = $salaEquipamento->idSala;
                 }
 
-                // Preenche a data de início com a data/hora atual
+                // Preenche a data de início e define estado inicial
                 $model->dataInicio = date('Y-m-d H:i:s');
-
-                // Define status como Pendente
                 $model->status = Manutencao::STATUS_PENDENTE;
             }
         }
 
-        // Preenche automaticamente se vier de uma sala
+        // Preenche automaticamente se criar a partir de uma sala
         if ($sala_id) {
             $sala = Sala::findOne($sala_id);
             if ($sala) {
                 $model->sala_id = $sala_id;
 
-                // Verificar se a sala já está em manutenção
+                // Verifica se a sala já está em manutenção ativa
                 $manutencaoAtiva = Manutencao::find()
                     ->where(['sala_id' => $sala_id])
                     ->andWhere(['status' => [Manutencao::STATUS_PENDENTE, Manutencao::STATUS_EM_CURSO]])
@@ -156,25 +178,25 @@ class ManutencaoController extends Controller
             }
         }
 
-        // Obter listas para dropdowns - APENAS ITENS DISPONÍVEIS
+        // Obtém listas para dropdowns - apenas itens disponíveis
         $tecnicos = $this->getTecnicos();
         $tecnicosList = ArrayHelper::map($tecnicos, 'id', 'username');
 
-        // Usar o método novo para obter apenas equipamentos disponíveis
-        $equipamentosDisponiveis = Manutencao::getEquipamentosDisponiveis();
+        $equipamentosDisponiveis = Manutencao::getEquipamentosDisponiveis(); // Equipamentos não em manutenção
         $equipamentosList = ArrayHelper::map($equipamentosDisponiveis, 'id', 'equipamento');
 
-        // Usar o método novo para obter apenas salas disponíveis
-        $salasDisponiveis = Manutencao::getSalasDisponiveis();
+        $salasDisponiveis = Manutencao::getSalasDisponiveis(); // Salas não em manutenção
         $salasList = ArrayHelper::map($salasDisponiveis, 'id', 'nome');
 
+        // Validação AJAX
         if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ActiveForm::validate($model);
         }
 
+        // Processa submissão do formulário
         if ($model->load(Yii::$app->request->post())) {
-            // Verificar novamente antes de salvar
+            // Verificação dupla antes de guardar (validação no cliente e servidor)
             if ($model->equipamento_id) {
                 $manutencaoAtiva = Manutencao::find()
                     ->where(['equipamento_id' => $model->equipamento_id])
@@ -199,10 +221,11 @@ class ManutencaoController extends Controller
                 }
             }
 
+            // Guarda o modelo se não houver erros
             if (!$model->hasErrors() && $model->save()) {
                 Yii::$app->session->setFlash('success', 'Manutenção criada com sucesso!');
 
-                // Atualiza o estado do equipamento para "Em Manutenção" (se tiver equipamento)
+                // Atualiza o estado do equipamento para "Em Manutenção"
                 if ($model->equipamento_id) {
                     $equipamento = Equipamento::findOne($model->equipamento_id);
                     if ($equipamento) {
@@ -211,7 +234,7 @@ class ManutencaoController extends Controller
                     }
                 }
 
-                // Atualiza o estado da sala para "Manutencao" (se tiver sala)
+                // Atualiza o estado da sala para "Manutencao"
                 if ($model->sala_id) {
                     $sala = Sala::findOne($model->sala_id);
                     if ($sala) {
@@ -234,19 +257,22 @@ class ManutencaoController extends Controller
         ]);
     }
 
+    /**
+     * Atualiza uma manutenção existente
+     * @param int $id ID da manutenção a atualizar
+     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
-        // Obter listas para dropdowns - APENAS ITENS DISPONÍVEIS + o item atual
+        // Obtém listas para dropdowns - itens disponíveis + item atual
         $tecnicos = $this->getTecnicos();
         $tecnicosList = ArrayHelper::map($tecnicos, 'id', 'username');
 
-        // Para update, precisamos incluir o equipamento atual mesmo se estiver em manutenção
         $equipamentosDisponiveis = Manutencao::getEquipamentosDisponiveis();
         $equipamentosList = ArrayHelper::map($equipamentosDisponiveis, 'id', 'equipamento');
 
-        // Adicionar o equipamento atual à lista se não estiver já
+        // Inclui o equipamento atual na lista mesmo se estiver em manutenção
         if ($model->equipamento_id && !isset($equipamentosList[$model->equipamento_id])) {
             $equipamentoAtual = Equipamento::findOne($model->equipamento_id);
             if ($equipamentoAtual) {
@@ -254,11 +280,10 @@ class ManutencaoController extends Controller
             }
         }
 
-        // Para update, precisamos incluir a sala atual mesmo se estiver em manutenção
         $salasDisponiveis = Manutencao::getSalasDisponiveis();
         $salasList = ArrayHelper::map($salasDisponiveis, 'id', 'nome');
 
-        // Adicionar a sala atual à lista se não estiver já
+        // Inclui a sala atual na lista mesmo se estiver em manutenção
         if ($model->sala_id && !isset($salasList[$model->sala_id])) {
             $salaAtual = Sala::findOne($model->sala_id);
             if ($salaAtual) {
@@ -266,13 +291,15 @@ class ManutencaoController extends Controller
             }
         }
 
+        // Validação AJAX
         if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ActiveForm::validate($model);
         }
 
+        // Processa submissão do formulário
         if ($model->load(Yii::$app->request->post())) {
-            // Verificar se está a tentar mudar para um equipamento que já está em manutenção
+            // Verifica se está a mudar para um equipamento que já está em manutenção
             if ($model->equipamento_id && $model->equipamento_id != $model->getOldAttribute('equipamento_id')) {
                 $manutencaoAtiva = Manutencao::find()
                     ->where(['equipamento_id' => $model->equipamento_id])
@@ -285,7 +312,7 @@ class ManutencaoController extends Controller
                 }
             }
 
-            // Verificar se está a tentar mudar para uma sala que já está em manutenção
+            // Verifica se está a mudar para uma sala que já está em manutenção
             if ($model->sala_id && $model->sala_id != $model->getOldAttribute('sala_id')) {
                 $manutencaoAtiva = Manutencao::find()
                     ->where(['sala_id' => $model->sala_id])
@@ -298,6 +325,7 @@ class ManutencaoController extends Controller
                 }
             }
 
+            // Guarda o modelo se não houver erros
             if (!$model->hasErrors() && $model->save()) {
                 Yii::$app->session->setFlash('success', 'Manutenção atualizada com sucesso!');
                 return $this->redirect(['view', 'id' => $model->id]);
@@ -314,6 +342,11 @@ class ManutencaoController extends Controller
         ]);
     }
 
+    /**
+     * Elimina uma manutenção existente
+     * Reverte os estados dos equipamentos/salas se necessário
+     * @param int $id ID da manutenção a eliminar
+     */
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
@@ -355,6 +388,7 @@ class ManutencaoController extends Controller
                 }
             }
 
+            // Elimina a manutenção
             if ($model->delete()) {
                 Yii::$app->session->setFlash('success', 'Manutenção eliminada permanentemente com sucesso!');
             } else {
@@ -368,7 +402,8 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action para iniciar manutenção
+     * Inicia uma manutenção (muda estado para "Em Curso")
+     * @param int $id ID da manutenção a iniciar
      */
     public function actionIniciar($id)
     {
@@ -391,7 +426,8 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action para iniciar manutenção (nome alternativo)
+     * Nome alternativo para actionIniciar
+     * @param int $id ID da manutenção a iniciar
      */
     public function actionIniciarManutencao($id)
     {
@@ -399,7 +435,9 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action para concluir manutenção
+     * Conclui uma manutenção (muda estado para "Concluída")
+     * Reverte os estados dos equipamentos/salas para operacional/livre
+     * @param int $id ID da manutenção a concluir
      */
     public function actionConcluir($id)
     {
@@ -410,7 +448,7 @@ class ManutencaoController extends Controller
             $model->dataFim = date('Y-m-d H:i:s');
 
             if ($model->save()) {
-                // Atualiza o estado do equipamento para "Operacional" (se tiver equipamento)
+                // Atualiza o estado do equipamento para "Operacional"
                 if ($model->equipamento_id) {
                     $equipamento = Equipamento::findOne($model->equipamento_id);
                     if ($equipamento) {
@@ -419,7 +457,7 @@ class ManutencaoController extends Controller
                     }
                 }
 
-                // Atualiza o estado da sala para "Livre" (se tiver sala)
+                // Atualiza o estado da sala para "Livre"
                 if ($model->sala_id) {
                     $sala = Sala::findOne($model->sala_id);
                     if ($sala) {
@@ -440,7 +478,8 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action para concluir manutenção (nome alternativo)
+     * Nome alternativo para actionConcluir
+     * @param int $id ID da manutenção a concluir
      */
     public function actionConcluirManutencao($id)
     {
@@ -448,7 +487,8 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action para cancelar manutenção
+     * Cancela uma manutenção (retorna para "Pendente")
+     * @param int $id ID da manutenção a cancelar
      */
     public function actionCancelar($id)
     {
@@ -471,7 +511,9 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action AJAX para obter informações do equipamento
+     * Obtém informações detalhadas de um equipamento (AJAX)
+     * @param int $id ID do equipamento
+     * @return array Informações em formato JSON
      */
     public function actionGetEquipamentoInfo($id)
     {
@@ -510,7 +552,9 @@ class ManutencaoController extends Controller
     }
 
     /**
-     * Action AJAX para obter a sala atual do equipamento
+     * Obtém a sala atual de um equipamento (AJAX)
+     * @param int $id ID do equipamento
+     * @return array Sala ID em formato JSON
      */
     public function actionGetEquipamentoSala($id)
     {
@@ -530,12 +574,21 @@ class ManutencaoController extends Controller
         return ['success' => false];
     }
 
+    /**
+     * Encontra uma manutenção pelo seu ID
+     * Lança exceção se a manutenção não for encontrada
+     * @param int $id ID da manutenção
+     * @return Manutencao modelo da manutenção encontrada
+     * @throws NotFoundHttpException se a manutenção não existir
+     */
     protected function findModel($id)
     {
+        // Procura a manutenção pelo ID
         if (($model = Manutencao::findOne($id)) !== null) {
             return $model;
         }
 
+        // Lança exceção se a manutenção não for encontrada
         throw new NotFoundHttpException('A manutenção solicitada não existe.');
     }
 }

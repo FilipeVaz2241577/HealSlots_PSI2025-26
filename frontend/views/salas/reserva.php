@@ -9,7 +9,6 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 
-
 // Mapear cores para estados - baseado no modelo Sala
 $coresEstadoSala = [
         'Livre' => 'success',
@@ -18,7 +17,7 @@ $coresEstadoSala = [
         'Inativa' => 'secondary'
 ];
 
-// Usar o método do modelo para obter o label correto
+// Usar o metodo do modelo para obter o label correto
 $estadoTextoSala = $sala->getEstadoLabel();
 $corBadgeSala = isset($coresEstadoSala[$sala->estado]) ? $coresEstadoSala[$sala->estado] : 'secondary';
 ?>
@@ -51,11 +50,11 @@ $corBadgeSala = isset($coresEstadoSala[$sala->estado]) ? $coresEstadoSala[$sala-
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>
                             <?= Yii::$app->session->getFlash('error') ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
                         </div>
                     <?php endif; ?>
 
-                    <!-- Adicione esta seção após o cabeçalho -->
+                    <!-- Adicione esta secção após o cabeçalho -->
                     <div class="alert alert-info mb-4">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Importante:</strong> O sistema verificará automaticamente conflitos de horários para a sala e equipamentos selecionados.
@@ -144,7 +143,7 @@ $corBadgeSala = isset($coresEstadoSala[$sala->estado]) ? $coresEstadoSala[$sala-
                                                   placeholder="Adicione observações sobre a reserva..."></textarea>
                                     </div>
 
-                                    <!-- Seção de Equipamentos -->
+                                    <!-- Secção de Equipamentos -->
                                     <div class="mb-4">
                                         <label class="form-label fw-bold d-flex justify-content-between align-items-center">
                                             <span>Selecione Equipamentos</span>
@@ -261,7 +260,7 @@ $corBadgeSala = isset($coresEstadoSala[$sala->estado]) ? $coresEstadoSala[$sala-
                                                                         'class' => 'btn btn-sm btn-outline-danger border-0',
                                                                         'title' => 'Remover este equipamento',
                                                                         'data' => [
-                                                                                'confirm' => 'Tem certeza que deseja remover este equipamento da sala?',
+                                                                                'confirm' => 'Tem a certeza que deseja remover este equipamento da sala?',
                                                                                 'method' => 'post',
                                                                         ],
                                                                         'style' => 'padding: 2px 6px;'
@@ -396,7 +395,7 @@ $js = <<<JS
         }
     });
     
-    // Form submission
+    // Submissão do formulário
     const form = document.getElementById('reserva-form');
     form.addEventListener('submit', function(event) {
         if (!form.checkValidity()) {

@@ -17,7 +17,7 @@ $this->title = 'Suporte';
                     <div class="card-body p-5">
                         <div class="text-center mb-5">
                             <h1 class="display-5 text-primary mb-2"><?= Html::encode($this->title) ?></h1>
-                            <p class="lead">Entre em contacto connosco </p>
+                            <p class="lead">Entre em contacto connosco</p>
                         </div>
 
                         <!-- Formulário de Contacto Centralizado -->
@@ -56,7 +56,7 @@ $this->title = 'Suporte';
                                 <?= $form->field($model, 'body')->textarea([
                                         'rows' => 5,
                                         'class' => 'form-control form-control-lg',
-                                        'placeholder' => 'Escreve a tua mensagem aqui...'
+                                        'placeholder' => 'Escreva a sua mensagem aqui...'
                                 ])->label('Mensagem') ?>
                             </div>
 
@@ -85,14 +85,14 @@ $this->title = 'Suporte';
                                     <div class="col-md-3 mb-3">
                                         <div class="p-3 border rounded">
                                             <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
-                                            <h6>Agendamentos</h6>
+                                            <h6>Marcações</h6>
                                             <small class="text-muted">Assistência com marcações</small>
                                         </div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <div class="p-3 border rounded">
                                             <i class="fas fa-cogs fa-2x text-primary mb-2"></i>
-                                            <h6>Problemas Sistema</h6>
+                                            <h6>Problemas no Sistema</h6>
                                             <small class="text-muted">Resolução de problemas</small>
                                         </div>
                                     </div>

@@ -118,53 +118,6 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
             </div>
         <?php endif; ?>
 
-        <!-- Estatísticas -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3><?= $totalManutencoes ?? 0 ?></h3>
-                        <p>Total Manutenções</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3><?= $manutencoesPendentes ?? 0 ?></h3>
-                        <p>Pendentes</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-primary">
-                    <div class="inner">
-                        <h3><?= $manutencoesCurso ?? 0 ?></h3>
-                        <p>Em Curso</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-play-circle"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3><?= $manutencoesConcluidas ?? 0 ?></h3>
-                        <p>Concluídas</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Card Principal -->
         <div class="row">
@@ -318,6 +271,54 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3><?= $totalManutencoes ?? 0 ?></h3>
+                    <p>Total Manutenções</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3><?= $manutencoesPendentes ?? 0 ?></h3>
+                    <p>Pendentes</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3><?= $manutencoesCurso ?? 0 ?></h3>
+                    <p>Em Curso</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3><?= $manutencoesConcluidas ?? 0 ?></h3>
+                    <p>Concluídas</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
             </div>
         </div>

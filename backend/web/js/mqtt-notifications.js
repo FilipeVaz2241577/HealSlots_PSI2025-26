@@ -1,5 +1,5 @@
 // backend/web/js/mqtt-notifications.js
-// MQTT Notifications via WebSocket (Mosquitto + mqtt.js)
+// Notificações MQTT via WebSocket (Mosquitto + mqtt.js)
 
 class MQTTNotifications {
     constructor() {
@@ -16,7 +16,7 @@ class MQTTNotifications {
     }
 
     /* =========================
-       INIT
+       INICIALIZAÇÃO
        ========================= */
     init() {
         this.loadFromStorage();
@@ -30,7 +30,7 @@ class MQTTNotifications {
     }
 
     /* =========================
-       MQTT CONNECTION
+       CONEXÃO MQTT
        ========================= */
     connectToMQTT() {
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -44,12 +44,12 @@ class MQTTNotifications {
 
         this.client.on('connect', () => this.onConnect());
         this.client.on('message', (topic, message) => this.onMessageArrived(topic, message));
-        this.client.on('error', err => console.error('❌ MQTT erro:', err));
-        this.client.on('close', () => console.warn('⚠️ MQTT desconectado'));
+        this.client.on('error', err => console.error('❌ Erro MQTT:', err));
+        this.client.on('close', () => console.warn('⚠️ MQTT desligado'));
     }
 
     onConnect() {
-        console.log('✅ Conectado ao broker MQTT (WebSocket)');
+        console.log('✅ Ligado ao broker MQTT (WebSocket)');
 
         this.client.subscribe([
             // EQUIPAMENTO
@@ -102,7 +102,7 @@ class MQTTNotifications {
     }
 
     /* =========================
-       NOTIFICATIONS
+       NOTIFICAÇÕES
        ========================= */
     addNotification(topic, message) {
         this.notifications.unshift({
@@ -128,7 +128,7 @@ class MQTTNotifications {
         if (this.notifications.length === 0) {
             this.notificationsContainer.innerHTML = `
                 <div class="text-center p-3 text-muted">
-                    Aguardando eventos MQTT…
+                    À espera de eventos MQTT…
                 </div>
             `;
             if (this.headerElement) this.headerElement.textContent = '(0)';
@@ -249,7 +249,7 @@ class MQTTNotifications {
                     icon = 'fa-calendar-alt';
 
                     if (n.topic === 'STATUS_CHANGED_REQUISICAO') {
-                        title = 'Status de Requisição Alterado';
+                        title = 'Estado de Requisição Alterado';
                         typeClass = 'update';
                         text = `Requisição #${json.id} - ${json.old_status} → ${json.new_status}`;
                         if (json.sala_nome) {
@@ -304,7 +304,7 @@ class MQTTNotifications {
                     icon = 'fa-building';
 
                     if (n.topic.includes('INSERT')) title = 'Novo Bloco';
-                    if (n.topic.includes('UPDATE')) title = 'Bloco Atualizada';
+                    if (n.topic.includes('UPDATE')) title = 'Bloco Atualizado';
                     if (n.topic.includes('DELETE')) {
                         title = 'Bloco Removido';
                         typeClass = 'delete';
@@ -360,7 +360,7 @@ class MQTTNotifications {
     }
 
     /* =========================
-       STORAGE & UI
+       ARMAZENAMENTO & UI
        ========================= */
     saveToStorage() {
         localStorage.setItem('mqtt_notifications', JSON.stringify(this.notifications));
@@ -425,7 +425,7 @@ class MQTTNotifications {
                 }
             }
             else if (topic === 'STATUS_CHANGED_REQUISICAO') {
-                title = 'Status Alterado';
+                title = 'Estado Alterado';
                 text = `Requisição #${json.id}: ${json.old_status} → ${json.new_status}`;
                 if (json.sala_nome) {
                     text += ` (${json.sala_nome})`;

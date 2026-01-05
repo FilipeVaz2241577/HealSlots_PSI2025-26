@@ -11,9 +11,7 @@
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-
-
-// Mapear cores para estados (usando as constantes do modelo)
+// Procurar cores para estados (usando as constantes do modelo)
 $coresEstado = [
         \common\models\Sala::ESTADO_LIVRE => 'success',
         \common\models\Sala::ESTADO_EM_USO => 'danger',
@@ -39,9 +37,9 @@ $desativadas = $contagemPorEstado[\common\models\Sala::ESTADO_DESATIVADA] ?? 0; 
                         <h1 class="display-5 text-primary mb-2"><?= Html::encode($this->title) ?></h1>
                         <p class="lead text-muted">
                             <?php if ($blocoModel): ?>
-                                Gerencie todas as salas do <?= Html::encode($blocoModel->nome) ?>
+                                Gere todas as salas do <?= Html::encode($blocoModel->nome) ?>
                             <?php else: ?>
-                                Gerencie todas as salas hospitalares
+                                Gere todas as salas hospitalares
                             <?php endif; ?>
                         </p>
                     </div>
@@ -142,7 +140,7 @@ $desativadas = $contagemPorEstado[\common\models\Sala::ESTADO_DESATIVADA] ?? 0; 
                             Nenhuma sala encontrada com os filtros atuais.
                             <?= Html::a('Clique aqui para remover os filtros', ['site/salas'], ['class' => 'alert-link']) ?>
                         <?php else: ?>
-                            Não existem salas cadastradas.
+                            Não existem salas registadas.
                             <?php if (Yii::$app->user->can('createSala')): ?>
                                 <?= Html::a('Clique aqui para adicionar uma nova sala', ['sala/create'], ['class' => 'alert-link']) ?>
                             <?php endif; ?>
@@ -207,7 +205,7 @@ $desativadas = $contagemPorEstado[\common\models\Sala::ESTADO_DESATIVADA] ?? 0; 
                     <div class="alert alert-light mt-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <h6 class="text-muted mb-3"><i class="fas fa-info-circle me-2"></i>Informações</h6>
+                                <h6 class="text-muted mb-3"><i class="fas fa-info-circle me-2"></i>Informação</h6>
                                 <ul class="list-unstyled">
                                     <li>
                                         <span class="badge bg-success me-2">&nbsp;</span>
@@ -223,7 +221,7 @@ $desativadas = $contagemPorEstado[\common\models\Sala::ESTADO_DESATIVADA] ?? 0; 
                                     </li>
                                     <li>
                                         <span class="badge bg-secondary me-2">&nbsp;</span>
-                                        <strong><?= $desativadas ?></strong> sala(s) desativadas(s) <!-- Alterado -->
+                                        <strong><?= $desativadas ?></strong> sala(s) desativada(s)
                                     </li>
                                 </ul>
                             </div>

@@ -14,12 +14,14 @@ use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 
 /**
- * UtilizadorController implements the CRUD actions for User model.
+ * Controlador de Utilizadores
+ * Implementa ações CRUD para o modelo User (gestão de utilizadores)
  */
 class UtilizadorController extends Controller
 {
     /**
-     * @inheritDoc
+     * Configura comportamentos do controlador
+     * Controla acesso apenas a administradores e valida métodos HTTP
      */
     public function behaviors()
     {
@@ -31,15 +33,15 @@ class UtilizadorController extends Controller
                     'rules' => [
                         [
                             'allow' => true,
-                            'roles' => ['Admin'],
+                            'roles' => ['Admin'], // Apenas administradores podem gerir utilizadores
                         ],
                     ],
                 ],
                 'verbs' => [
                     'class' => VerbFilter::class,
                     'actions' => [
-                        'delete' => ['POST'],
-                        'restore' => ['POST'],
+                        'delete' => ['POST'],   // Desativação requer POST
+                        'restore' => ['POST'],  // Restauração requer POST
                     ],
                 ],
             ]
@@ -47,15 +49,17 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Get roles from auth_item table where type = 1 (roles)
+     * Obtém lista de roles (funções/permissões) da tabela auth_item
+     * Filtra apenas roles (type = 1) e não permissões individuais
+     * @return array Mapeamento de [nome_role => nome_role] para dropdowns
      */
     private function getRolesList()
     {
-        // Buscar diretamente da tabela auth_item onde type = 1 (roles)
+        // Consulta direta à tabela auth_item para obter roles (type = 1)
         $roles = (new \yii\db\Query())
             ->select(['name'])
             ->from('auth_item')
-            ->where(['type' => 1]) // Apenas roles
+            ->where(['type' => 1]) // Apenas roles (1 = role, 2 = permissão)
             ->orderBy('name')
             ->all();
 
@@ -63,22 +67,24 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Lists all User models.
-     *
-     * @return string
+     * Lista todos os utilizadores
+     * Inclui pesquisa, filtros e estatísticas sobre utilizadores e roles
+     * @return string Renderização da vista de lista
      */
     public function actionIndex()
     {
+        // Modelo de pesquisa para filtragem de utilizadores
         $searchModel = new UserSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        // Estatísticas
-        $activeUsersCount = User::find()->where(['status' => User::STATUS_ACTIVE])->count();
-        $inactiveUsersCount = User::find()->where(['status' => User::STATUS_INACTIVE])->count();
-        $totalUsersCount = User::find()->count();
+        // Estatísticas sobre utilizadores
+        $activeUsersCount = User::find()->where(['status' => User::STATUS_ACTIVE])->count();    // Utilizadores ativos
+        $inactiveUsersCount = User::find()->where(['status' => User::STATUS_INACTIVE])->count(); // Utilizadores inativos
+        $totalUsersCount = User::find()->count();                                                // Total de utilizadores
 
+        // Estatísticas sobre roles
         $rolesList = $this->getRolesList();
-        $differentRolesCount = count($rolesList);
+        $differentRolesCount = count($rolesList); // Número de roles diferentes disponíveis
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -92,10 +98,10 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Displays a single User model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
+     * Exibe detalhes de um utilizador específico
+     * @param int $id ID do utilizador a visualizar
+     * @return string Renderização da vista de detalhes
+     * @throws NotFoundHttpException se o utilizador não for encontrado
      */
     public function actionView($id)
     {
@@ -105,9 +111,9 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Creates a new User model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
+     * Cria um novo utilizador
+     * Se for bem-sucedido, redireciona para a lista de utilizadores
+     * @return string|Response Renderização do formulário ou redirecionamento
      */
     public function actionCreate()
     {
@@ -117,27 +123,65 @@ class UtilizadorController extends Controller
 
         $rolesList = $this->getRolesList();
 
+        // Validação AJAX para feedback em tempo real
         if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ActiveForm::validate($model);
         }
 
+        // Processa submissão do formulário
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            // DEBUG: Log dos dados recebidos
+            Yii::info("Dados do formulário: " . print_r($model->attributes, true));
+            Yii::info("Role selecionada: " . $model->role);
+
+            // Criptografa a password antes de guardar
             $model->setPassword($model->password);
-            $model->generateAuthKey();
+            $model->generateAuthKey(); // Gera chave de autenticação
 
             if ($model->save()) {
-                // Atribuir role usando authManager
+                // DEBUG: Log do ID gerado
+                Yii::info("Usuário salvo com ID: " . $model->id);
+                Yii::info("É novo registro? " . ($model->isNewRecord ? 'SIM' : 'NÃO'));
+
+                // Atribui role ao utilizador usando authManager
                 if (!empty($model->role)) {
                     $auth = Yii::$app->authManager;
                     $role = $auth->getRole($model->role);
+
                     if ($role) {
-                        $auth->assign($role, $model->id);
+                        try {
+                            // Tenta atribuir a role
+                            $auth->assign($role, $model->id);
+                            Yii::info("Role '{$model->role}' atribuída com sucesso ao usuário ID {$model->id}");
+
+                        } catch (\yii\db\IntegrityException $e) {
+                            // Se for erro de duplicidade, apenas registra e continua
+                            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                                Yii::warning("Usuário ID {$model->id} já possui a role '{$model->role}'. Ignorando erro...");
+
+                                // Mostra mensagem informativa (opcional)
+                                Yii::$app->session->addFlash('info',
+                                    "Utilizador criado. A role '{$model->role}' já estava atribuída.");
+                            } else {
+                                // Outro tipo de erro - relança
+                                Yii::error("Erro ao atribuir role: " . $e->getMessage());
+                                throw $e;
+                            }
+                        }
+                    } else {
+                        Yii::error("Role '{$model->role}' não encontrada no sistema.");
+                        Yii::$app->session->addFlash('warning',
+                            "Utilizador criado, mas a role '{$model->role}' não foi encontrada.");
                     }
                 }
 
                 Yii::$app->session->setFlash('success', 'Utilizador criado com sucesso!');
                 return $this->redirect(['index']);
+            } else {
+                // DEBUG: Se save() falhar
+                Yii::error("Erro ao salvar usuário: " . print_r($model->errors, true));
+                Yii::$app->session->setFlash('error', 'Erro ao criar o utilizador.');
             }
         }
 
@@ -148,33 +192,34 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Updates an existing User model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Atualiza um utilizador existente
+     * Se for bem-sucedido, redireciona para a lista de utilizadores
+     * @param int $id ID do utilizador a atualizar
+     * @return string|Response Renderização do formulário ou redirecionamento
+     * @throws NotFoundHttpException se o utilizador não for encontrado
      */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $model->scenario = User::SCENARIO_UPDATE;
+        $model->scenario = User::SCENARIO_UPDATE; // Usa cenário específico para atualização
 
         $rolesList = $this->getRolesList();
 
-        // Obter role atual do utilizador
+        // Obtém a role atual do utilizador
         $auth = Yii::$app->authManager;
         $userRoles = $auth->getRolesByUser($id);
         if (!empty($userRoles)) {
-            $model->role = array_keys($userRoles)[0];
+            $model->role = array_keys($userRoles)[0]; // Assume um utilizador tem apenas uma role principal
         }
 
+        // Processa submissão do formulário
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            // Atualizar role
-            $auth->revokeAll($id);
+            // Atualiza a role do utilizador
+            $auth->revokeAll($id); // Remove todas as roles atuais
             if (!empty($model->role)) {
                 $role = $auth->getRole($model->role);
                 if ($role) {
-                    $auth->assign($role, $id);
+                    $auth->assign($role, $id); // Atribui nova role
                 }
             }
 
@@ -189,23 +234,24 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Soft delete - marca como inativo
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Desativação suave (soft delete) de um utilizador
+     * Marca como inativo em vez de eliminar permanentemente
+     * @param int $id ID do utilizador a desativar
+     * @return Response Redirecionamento para a lista de utilizadores
+     * @throws NotFoundHttpException se o utilizador não for encontrado
      */
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
 
-        // Verificar se é o próprio utilizador
+        // Verifica se é o próprio utilizador (não pode desativar a sua própria conta)
         if ($model->id === Yii::$app->user->id) {
             Yii::$app->session->setFlash('error', 'Não pode desativar a sua própria conta!');
             return $this->redirect(['index']);
         }
 
         try {
-            // Soft delete - marcar como inativo em vez de eliminar
+            // Desativação suave (muda status para inativo)
             if ($model->softDelete()) {
                 Yii::$app->session->setFlash('success', 'Utilizador desativado com sucesso!');
             } else {
@@ -219,10 +265,11 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Restaurar utilizador inativo
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Restaura um utilizador previamente desativado
+     * Altera o status de inativo para ativo
+     * @param int $id ID do utilizador a restaurar
+     * @return Response Redirecionamento para a lista de utilizadores
+     * @throws NotFoundHttpException se o utilizador não for encontrado
      */
     public function actionRestore($id)
     {
@@ -242,18 +289,20 @@ class UtilizadorController extends Controller
     }
 
     /**
-     * Finds the User model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return User the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
+     * Encontra um utilizador pelo seu ID
+     * Lança exceção se o utilizador não for encontrado
+     * @param int $id ID do utilizador
+     * @return User modelo do utilizador encontrado
+     * @throws NotFoundHttpException se o utilizador não existir
      */
     protected function findModel($id)
     {
+        // Procura o utilizador pelo ID
         if (($model = User::findOne($id)) !== null) {
             return $model;
         }
 
+        // Lança exceção se o utilizador não for encontrado
         throw new NotFoundHttpException('O utilizador solicitado não existe.');
     }
 }

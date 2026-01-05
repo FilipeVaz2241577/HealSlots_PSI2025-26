@@ -5,9 +5,8 @@
 
 use yii\bootstrap5\Html;
 
-// PRIMEIRO: Definir $temReservasAtivas ANTES de usá-la
-// Buscar reservas ativas do usuário atual para esta sala
-$reservasAtivasUsuario = \common\models\Requisicao::find()
+// Procurar reservas ativas do utilizador atual para esta sala
+$reservasAtivasUtilizador = \common\models\Requisicao::find()
         ->where([
                 'user_id' => Yii::$app->user->id,
                 'sala_id' => $sala->id,
@@ -15,9 +14,9 @@ $reservasAtivasUsuario = \common\models\Requisicao::find()
         ])
         ->all();
 
-$temReservasAtivas = !empty($reservasAtivasUsuario);
+$temReservasAtivas = !empty($reservasAtivasUtilizador);
 
-// DEBUG: Adicionar diretamente na página (remova depois de testar)
+// DEBUG: Informação para depuração
 if (YII_DEBUG) {
     echo "<!-- DEBUG SALA -->\n";
     echo "<!-- Estado raw: " . $sala->estado . " -->\n";
@@ -27,7 +26,7 @@ if (YII_DEBUG) {
     echo "<!-- isDisponivelParaReserva: " . ($sala->isDisponivelParaReserva() ? 'Sim' : 'Não') . " -->\n";
     echo "<!-- Tem reservas ativas: " . ($temReservasAtivas ? 'Sim' : 'Não') . " -->\n";
 
-    // Debug do método optsEstado()
+    // Debug do metodo optsEstado()
     $opts = $sala::optsEstado();
     echo "<!-- optsEstado: " . print_r($opts, true) . " -->\n";
     echo "<!-- Estado existe em optsEstado: " . (isset($opts[$sala->estado]) ? 'Sim' : 'Não') . " -->\n";
@@ -36,16 +35,15 @@ if (YII_DEBUG) {
     }
 }
 
-
-// CORREÇÃO: Use todos os estados possíveis
+// Cores dos estados
 $coresEstadoSala = [
         'Livre' => 'success',
-        'EmUso' => 'primary',        // ← USAR APENAS 'EmUso' PARA SALAS OCUPADAS
+        'EmUso' => 'primary',
         'Manutencao' => 'warning',
-        'Desativada' => 'secondary', // ← Mudei de 'Inativa' para 'Desativada'
+        'Desativada' => 'secondary',
 ];
 
-// CORREÇÃO: Use as constantes para verificação
+// Usar as constantes para verificação
 $corBadgeSala = isset($coresEstadoSala[$sala->estado]) ?
         $coresEstadoSala[$sala->estado] : 'secondary';
 
@@ -55,7 +53,7 @@ $coresEstadoEquipamento = [
         'Em Uso' => 'danger'
 ];
 
-// CORREÇÃO: Use o método do modelo
+// Usar o metodo do modelo para obter o texto do estado
 $estadoTextoSala = $sala->getEstadoLabel();
 
 // Verificar se a sala está disponível para reserva
@@ -75,7 +73,7 @@ foreach ($equipamentos as $equipamento) {
     }
 }
 
-// NOVO: Verificar se a sala está reservada (EmUso)
+// Verificar se a sala está reservada (EmUso)
 $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
 ?>
 
@@ -105,7 +103,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                             <i class="fas fa-check-circle me-2"></i>
                             <?= Yii::$app->session->getFlash('success') ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
                         </div>
                     <?php endif; ?>
 
@@ -113,7 +111,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>
                             <?= Yii::$app->session->getFlash('error') ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
                         </div>
                     <?php endif; ?>
 
@@ -133,9 +131,9 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                     <?php if ($temReservasAtivas): ?>
                         <div class="alert alert-success mb-4">
                             <i class="fas fa-calendar-check me-2"></i>
-                            <strong>Você tem reservas ativas nesta sala!</strong>
+                            <strong>Tem reservas ativas nesta sala!</strong>
                             <ul class="mb-0 mt-2">
-                                <?php foreach ($reservasAtivasUsuario as $reserva): ?>
+                                <?php foreach ($reservasAtivasUtilizador as $reserva): ?>
                                     <li>
                                         Reserva #<?= $reserva->id ?>:
                                         <?= Yii::$app->formatter->asDateTime($reserva->dataInicio) ?>
@@ -263,7 +261,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                                                                         'class' => 'btn btn-outline-danger',
                                                                                         'title' => 'Remover da sala',
                                                                                         'data' => [
-                                                                                                'confirm' => 'Tem certeza que deseja remover este equipamento da sala?',
+                                                                                                'confirm' => 'Tem a certeza que deseja remover este equipamento da sala?',
                                                                                                 'method' => 'post',
                                                                                         ]
                                                                                 ]) ?>
@@ -291,9 +289,9 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                             <?php endif; ?>
                         </div>
 
-                        <!-- Sidebar com Ações Rápidas -->
+                        <!-- Barra lateral com Ações Rápidas -->
                         <div class="col-md-4">
-                            <!-- Status Card -->
+                            <!-- Cartão de Status -->
                             <div class="card mb-4">
                                 <div class="card-header bg-<?= $corBadgeSala ?> text-white">
                                     <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Status</h6>
@@ -382,7 +380,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                                     ['class' => 'btn btn-warning']) ?>
                                         <?php endif; ?>
 
-                                        <!-- BOTÃO RESERVAR SALA (DESABILITADO SE RESERVADA) -->
+                                        <!-- BOTÃO RESERVAR SALA (DESATIVADO SE RESERVADA) -->
                                         <?php if ($disponivelParaReserva && !$salaReservada): ?>
                                             <?= Html::a('<i class="fas fa-calendar-check me-2"></i> Reservar Sala',
                                                     ['site/reserva', 'id' => $sala->id],
@@ -396,7 +394,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                             </small>
                                         <?php endif; ?>
 
-                                        <!-- BOTÃO SOLICITAR MANUTENÇÃO (DESABILITADO SE RESERVADA) -->
+                                        <!-- BOTÃO SOLICITAR MANUTENÇÃO (DESATIVADO SE RESERVADA) -->
                                         <?php if (!$salaReservada && $sala->estado !== \common\models\Sala::ESTADO_MANUTENCAO): ?>
                                             <?= Html::a('<i class="fas fa-tools me-2"></i> Solicitar Manutenção',
                                                     ['site/solicitar-manutencao-sala', 'id' => $sala->id],
@@ -431,7 +429,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                                     [
                                                             'class' => 'btn btn-danger',
                                                             'data' => [
-                                                                    'confirm' => 'Tem certeza que deseja cancelar sua(s) reserva(s) ativa(s) nesta sala? ' .
+                                                                    'confirm' => 'Tem a certeza que deseja cancelar a(s) sua(s) reserva(s) ativa(s) nesta sala? ' .
                                                                             'Os equipamentos serão devolvidos ao estado operacional.',
                                                                     'method' => 'post',
                                                             ]
@@ -455,7 +453,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                                     [
                                                             'class' => 'btn btn-outline-danger',
                                                             'data' => [
-                                                                    'confirm' => 'Tem certeza que deseja remover TODOS os equipamentos desta sala?',
+                                                                    'confirm' => 'Tem a certeza que deseja remover TODOS os equipamentos desta sala?',
                                                                     'method' => 'post',
                                                             ]
                                                     ]) ?>
@@ -471,7 +469,7 @@ $salaReservada = ($sala->estado === \common\models\Sala::ESTADO_EM_USO);
                                                     [
                                                             'class' => 'btn btn-outline-danger',
                                                             'data' => [
-                                                                    'confirm' => 'Tem certeza que deseja eliminar esta sala?',
+                                                                    'confirm' => 'Tem a certeza que deseja eliminar esta sala?',
                                                                     'method' => 'post',
                                                             ]
                                                     ]) ?>
@@ -553,7 +551,7 @@ $(document).ready(function() {
     
     // Confirmar antes de cancelar reserva
     $('.btn-danger[href*="cancelar-reserva"]').click(function(e) {
-        if (!confirm('Tem certeza que deseja cancelar todas as suas reservas ativas nesta sala?\n\nEsta ação devolverá a sala ao estado livre e os equipamentos ao estado operacional.')) {
+        if (!confirm('Tem a certeza que deseja cancelar todas as suas reservas ativas nesta sala?\n\nEsta ação devolverá a sala ao estado livre e os equipamentos ao estado operacional.')) {
             e.preventDefault();
             return false;
         }

@@ -9,3 +9,8 @@
 2025-12-30 18:53:38 | INSERT_MANUTENCAO | {"id":13,"descricao":"","status":"Pendente","dataInicio":"2025-12-30T18:53","dataFim":"","equipament
 2025-12-30 18:53:46 | DELETE_MANUTENCAO | {"id":13}
 2025-12-30 19:02:21 | INSERT_MANUTENCAO | {"id":14,"descricao":"","status":"Pendente","dataInicio":"2025-12-30T19:02","dataFim":"","equipament
+2026-01-05 21:04:18 | INSERT_MANUTENCAO | {"id":1,"descricao":"","status":"Pendente","dataInicio":"2026-01-05T22:00","dataFim":"2026-01-05T22:
+2026-01-05 21:04:21 | UPDATE_MANUTENCAO | {"id":1,"descricao":"","status":"Em Curso","dataInicio":"2026-01-05 21:04:21","dataFim":"2026-01-05 
+2026-01-05 21:04:30 | DELETE_MANUTENCAO | {"id":1}
+2026-01-05 21:45:05 | INSERT_MANUTENCAO | {"id":2,"descricao":"MANUTEN\u00c7\u00c3O DA SALA:\r\n------------------------------\r\nSala: [Nome 
+2026-01-05 21:45:09 | DELETE_MANUTENCAO | {"id":2}

@@ -2,3 +2,14 @@
 2025-12-30 18:56:19 | STATUS_CHANGED_USER | {"id":1,"username":"Carreiraa","old_status":10,"new_status":"10","old_status_text":"Ativo","new_stat
 2025-12-30 18:56:31 | UPDATE_USER | {"id":1,"username":"Carreira","email":"carreira@gmail.com","status":"10","status_text":"Ativo","crea
 2025-12-30 18:56:31 | STATUS_CHANGED_USER | {"id":1,"username":"Carreira","old_status":10,"new_status":"10","old_status_text":"Ativo","new_statu
+2026-01-05 21:02:12 | INSERT_USER | {"id":6,"username":"admin","email":"admin@gmail.com","status":"10","status_text":"Ativo","created_at
+2026-01-05 22:27:45 | INSERT_USER | {"id":7,"username":"qwety","email":"qwerty@gmail.com","status":"10","status_text":"Ativo","created_a
+2026-01-05 22:32:29 | INSERT_USER | {"id":8,"username":"qwety1","email":"qwerty1@gmail.com","status":"10","status_text":"Ativo","created
+2026-01-05 22:32:39 | INSERT_USER | {"id":9,"username":"qwety12","email":"qwerty12@gmail.com","status":"10","status_text":"Ativo","creat
+2026-01-05 23:01:30 | UPDATE_USER | {"id":3,"username":"teste2","email":"teste2@gmail.com","status":9,"status_text":"Inativo","created_a
+2026-01-05 23:01:30 | STATUS_CHANGED_USER | {"id":3,"username":"teste2","old_status":10,"new_status":9,"old_status_text":"Ativo","new_status_tex
+2026-01-05 23:01:34 | UPDATE_USER | {"id":3,"username":"teste2","email":"teste2@gmail.com","status":10,"status_text":"Ativo","created_at
+2026-01-05 23:01:34 | STATUS_CHANGED_USER | {"id":3,"username":"teste2","old_status":9,"new_status":10,"old_status_text":"Inativo","new_status_t
+2026-01-05 23:01:52 | INSERT_USER | {"id":10,"username":"123","email":"123@gmail.com","status":"10","status_text":"Ativo","created_at":"
+2026-01-05 23:02:17 | INSERT_USER | {"id":11,"username":"1234","email":"1234@gmail.com","status":"10","status_text":"Ativo","created_at"
+2026-01-05 23:02:44 | INSERT_USER | {"id":12,"username":"12345","email":"12345@gmail.com","status":"10","status_text":"Ativo","created_a

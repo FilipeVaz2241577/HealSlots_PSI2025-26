@@ -4,20 +4,22 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
-use backend\mosquitto\phpMQTT; // ADICIONE ESTA LINHA
+use backend\mosquitto\phpMQTT;
 
 /**
- * This is the model class for table "sala".
+ * Esta é a classe de modelo para a tabela "sala".
+ * Representa as salas disponíveis no sistema.
  *
- * @property int $id
- * @property string $nome
- * @property string $estado
- * @property int $bloco_id
+ * @property int $id - Identificador único da sala
+ * @property string $nome - Nome da sala
+ * @property string $estado - Estado atual da sala (Livre, EmUso, etc.)
+ * @property int $bloco_id - ID do bloco a que pertence (chave estrangeira)
  *
- * @property Bloco $bloco
+ * @property Bloco $bloco - Relação com o bloco a que pertence
  */
 class Sala extends ActiveRecord
 {
+    // Constantes para os estados possíveis da sala
     const ESTADO_LIVRE = 'Livre';
     const ESTADO_EM_USO = 'EmUso';
     const ESTADO_MANUTENCAO = 'Manutencao';
@@ -25,52 +27,64 @@ class Sala extends ActiveRecord
 
     /**
      * {@inheritdoc}
+     * Retorna o nome da tabela associada a este modelo
      */
     public static function tableName()
     {
-        return '{{%sala}}';
+        return '{{%sala}}'; // Nome da tabela na base de dados (com prefixo se aplicável)
     }
 
     /**
      * {@inheritdoc}
+     * Define os comportamentos do modelo
      */
     public function behaviors()
     {
-        return [];
+        return []; // Pode adicionar comportamentos aqui se necessário
     }
 
     /**
      * {@inheritdoc}
+     * Define as regras de validação para os atributos do modelo
      */
     public function rules()
     {
         return [
+            // nome e bloco_id são obrigatórios
             [['nome', 'bloco_id'], 'required'],
+            // bloco_id deve ser um inteiro
             [['bloco_id'], 'integer'],
+            // nome é uma string com máximo de 100 caracteres
             [['nome'], 'string', 'max' => 100],
+            // estado é uma string com máximo de 20 caracteres
             [['estado'], 'string', 'max' => 20],
+            // Valor padrão para estado é 'Livre'
             [['estado'], 'default', 'value' => self::ESTADO_LIVRE],
+            // estado deve ser um dos valores permitidos
             ['estado', 'in', 'range' => array_keys(self::optsEstado())],
+            // Validação de existência do bloco (chave estrangeira)
             [['bloco_id'], 'exist', 'skipOnError' => true, 'targetClass' => Bloco::class, 'targetAttribute' => ['bloco_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
+     * Define os rótulos para os atributos (usados em formulários)
      */
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'nome' => 'Nome',
-            'estado' => 'Estado',
-            'bloco_id' => 'Bloco',
-            'blocoName' => 'Bloco',
+            'id' => 'ID', // Rótulo para o ID
+            'nome' => 'Nome', // Rótulo para o nome da sala
+            'estado' => 'Estado', // Rótulo para o estado da sala
+            'bloco_id' => 'Bloco', // Rótulo para o ID do bloco
+            'blocoName' => 'Bloco', // Rótulo para o nome do bloco (propriedade virtual)
         ];
     }
 
     /**
-     * Gets query for [[Bloco]].
+     * Obtém a relação com o bloco a que pertence
+     * @return \yii\db\ActiveQuery - Query para obter o bloco
      */
     public function getBloco()
     {
@@ -78,7 +92,8 @@ class Sala extends ActiveRecord
     }
 
     /**
-     * Get bloco name
+     * Obtém o nome do bloco (propriedade virtual)
+     * @return string - Nome do bloco ou 'N/A' se não existir
      */
     public function getBlocoName()
     {
@@ -86,21 +101,22 @@ class Sala extends ActiveRecord
     }
 
     /**
-     * column estado ENUM value labels
-     * @return string[]
+     * Obtém os rótulos para os valores do ENUM do estado
+     * @return string[] - Array com os pares chave-valor dos estados
      */
     public static function optsEstado()
     {
         return [
             self::ESTADO_LIVRE => 'Livre',
-            self::ESTADO_EM_USO => 'Em Uso',          // ← "EmUso" mapeado para "Em Uso"
+            self::ESTADO_EM_USO => 'Em Uso',          // Nota: "EmUso" mapeado para "Em Uso"
             self::ESTADO_MANUTENCAO => 'Em Manutenção',
             self::ESTADO_DESATIVADA => 'Desativada',
         ];
     }
 
     /**
-     * @return string
+     * Obtém o rótulo do estado atual
+     * @return string - Rótulo do estado ou 'Desconhecido' se não existir
      */
     public function getEstadoLabel()
     {
@@ -111,7 +127,7 @@ class Sala extends ActiveRecord
             return $opts[$this->estado];
         }
 
-        // Se não encontrar, verificar case-insensitive
+        // Se não encontrar, verificar case-insensitive (para compatibilidade)
         $estadoLower = strtolower($this->estado);
         foreach ($opts as $key => $label) {
             if (strtolower($key) === $estadoLower) {
@@ -119,56 +135,72 @@ class Sala extends ActiveRecord
             }
         }
 
-        return 'Desconhecido (' . $this->estado . ')';
+        return 'Desconhecido (' . $this->estado . ')'; // Fallback com valor original
     }
 
     /**
-     * @return bool
+     * Verifica se a sala está livre
+     * @return bool - True se o estado for 'Livre'
      */
     public function isEstadoLivre()
     {
         return $this->estado === self::ESTADO_LIVRE;
     }
 
+    /**
+     * Define o estado da sala como livre
+     */
     public function setEstadoToLivre()
     {
         $this->estado = self::ESTADO_LIVRE;
     }
 
     /**
-     * @return bool
+     * Verifica se a sala está em uso
+     * @return bool - True se o estado for 'EmUso'
      */
     public function isEstadoEmUso()
     {
         return $this->estado === self::ESTADO_EM_USO;
     }
 
+    /**
+     * Define o estado da sala como em uso
+     */
     public function setEstadoToEmUso()
     {
         $this->estado = self::ESTADO_EM_USO;
     }
 
     /**
-     * @return bool
+     * Verifica se a sala está em manutenção
+     * @return bool - True se o estado for 'Manutencao'
      */
     public function isEstadoManutencao()
     {
         return $this->estado === self::ESTADO_MANUTENCAO;
     }
 
+    /**
+     * Define o estado da sala como em manutenção
+     */
     public function setEstadoToManutencao()
     {
         $this->estado = self::ESTADO_MANUTENCAO;
     }
 
     /**
-     * @return bool
+     * Verifica se a sala está desativada
+     * @return bool - True se o estado for 'Desativada'
      */
     public function isEstadoDesativada()
     {
         return $this->estado === self::ESTADO_DESATIVADA;
     }
 
+    /**
+     * Define o estado da sala como desativada
+     */
     public function setEstadoToDesativada()
     {
         $this->estado = self::ESTADO_DESATIVADA;
@@ -176,30 +208,32 @@ class Sala extends ActiveRecord
 
     /**
      * Verifica se a sala está disponível para reserva
-     * @return bool
+     * @return bool - True se o estado permitir reserva
      */
     public function isDisponivelParaReserva()
     {
         return in_array($this->estado, [
             self::ESTADO_LIVRE,
-            self::ESTADO_EM_USO  // Sala ainda pode ser reservada mesmo se já estiver em uso
+            self::ESTADO_EM_USO  // Nota: Sala ainda pode ser reservada mesmo se já estiver em uso
         ]);
     }
 
     /**
-     * Get all salas count by estado
+     * Obtém a contagem de salas por estado para estatísticas
+     * @return array - Array com a contagem de salas por estado
      */
     public static function getCountByEstado()
     {
         return self::find()
             ->select(['estado', 'COUNT(*) as count'])
             ->groupBy('estado')
-            ->indexBy('estado')
-            ->column();
+            ->indexBy('estado') // Usa o estado como índice do array
+            ->column(); // Retorna apenas a coluna de contagens
     }
 
     /**
-     * Get salas em manutenção sem registo de manutenção ativa
+     * Obtém salas em manutenção sem registo de manutenção ativa
+     * @return array - Array de salas em manutenção sem registo ativo
      */
     public static function getSalasManutencaoSemRegisto()
     {
@@ -209,14 +243,15 @@ class Sala extends ActiveRecord
                 (new \yii\db\Query())
                     ->select(['sala_id'])
                     ->from('manutencao')
-                    ->where(['status' => ['Pendente', 'Em Curso']])
-                    ->andWhere(['IS NOT', 'sala_id', null])
+                    ->where(['status' => ['Pendente', 'Em Curso']]) // Estados de manutenção ativos
+                    ->andWhere(['IS NOT', 'sala_id', null]) // Apenas registos com sala associada
             ])
-            ->all();
+            ->all(); // Retorna todos os resultados
     }
 
     /**
-     * Get count de salas em manutenção sem registo
+     * Obtém a contagem de salas em manutenção sem registo ativo
+     * @return int - Número de salas em manutenção sem registo
      */
     public static function getCountSalasManutencaoSemRegisto()
     {
@@ -229,11 +264,12 @@ class Sala extends ActiveRecord
                     ->where(['status' => ['Pendente', 'Em Curso']])
                     ->andWhere(['IS NOT', 'sala_id', null])
             ])
-            ->count();
+            ->count(); // Retorna apenas a contagem
     }
 
     /**
-     * Get equipamentos in this sala
+     * Obtém os equipamentos associados a esta sala (via tabela de ligação)
+     * @return \yii\db\ActiveQuery - Query para obter os equipamentos
      */
     public function getEquipamentos()
     {
@@ -242,7 +278,8 @@ class Sala extends ActiveRecord
     }
 
     /**
-     * Get sala_equipamento relationships
+     * Obtém os registos de associação sala-equipamento
+     * @return \yii\db\ActiveQuery - Query para obter as associações
      */
     public function getSalaEquipamentos()
     {
@@ -250,7 +287,8 @@ class Sala extends ActiveRecord
     }
 
     /**
-     * Debug method to check state
+     * Método de debug para verificar o estado da sala
+     * @return array - Array com informações de debug
      */
     public function debugEstado()
     {
@@ -264,34 +302,35 @@ class Sala extends ActiveRecord
     }
 
     // ==============================================
-    // ADICIONE ESTES 3 MÉTODOS PARA MQTT
+    // MÉTODOS PARA COMUNICAÇÃO MQTT
     // ==============================================
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     * Executa após salvar o registo (tanto inserção como atualização)
      */
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
 
-        // Obter dados da sala
+        // Preparar dados da sala para envio MQTT
         $data = [
             'id' => $this->id,
             'nome' => $this->nome,
             'estado' => $this->estado,
             'bloco_id' => $this->bloco_id,
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s') // Timestamp atual
         ];
 
-        // Adicionar bloco se disponível
+        // Adicionar informações do bloco (se disponível)
         if ($this->bloco) {
             $data['bloco_nome'] = $this->bloco->nome;
             $data['bloco_estado'] = $this->bloco->estado;
         }
 
-        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE); // Converter para JSON
 
-        // Publicar no Mosquitto
+        // Publicar no Mosquitto MQTT baseado no tipo de operação
         if ($insert) {
             $this->FazPublishNoMosquitto("INSERT_SALA", $myJSON);
         } else {
@@ -322,12 +361,14 @@ class Sala extends ActiveRecord
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     * Executa após eliminar o registo
      */
     public function afterDelete()
     {
         parent::afterDelete();
 
+        // Preparar dados mínimos para notificar a eliminação
         $data = [
             'id' => $this->id,
             'nome' => $this->nome,
@@ -340,51 +381,64 @@ class Sala extends ActiveRecord
         }
 
         $myJSON = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        // Publicar no tópico de eliminação
         $this->FazPublishNoMosquitto("DELETE_SALA", $myJSON);
     }
 
     /**
-     * Publica mensagem no Mosquitto MQTT
+     * Publica uma mensagem no servidor Mosquitto MQTT
+     * @param string $canal - Nome do tópico/canal MQTT
+     * @param string $msg - Mensagem a publicar (em formato JSON)
+     * @return bool - True se a publicação for bem-sucedida
      */
     public function FazPublishNoMosquitto($canal, $msg)
     {
         try {
-            // Caminho ABSOLUTO para o phpMQTT
+            // Caminho ABSOLUTO para o ficheiro phpMQTT.php
             $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
 
+            // Verificar se o ficheiro existe
             if (!file_exists($phpMQTTPath)) {
                 error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
                 return false;
             }
 
+            // Incluir a biblioteca MQTT
             require_once $phpMQTTPath;
 
-            $server = "127.0.0.1";
-            $port = 1883;
-            $client_id = "yii_sala_" . uniqid();
+            // Configurações do servidor MQTT
+            $server = "127.0.0.1"; // Endereço do servidor Mosquitto (localhost)
+            $port = 1883; // Porta padrão do MQTT
+            $client_id = "yii_sala_" . uniqid(); // ID único do cliente
 
+            // Criar instância do cliente MQTT
             $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
 
+            // Tentar conectar ao servidor MQTT (timeout de 5 segundos)
             if ($mqtt->connect(true, null, null, null, 5)) {
+                // Publicar a mensagem no tópico especificado (QoS 0 = sem confirmação)
                 $mqtt->publish($canal, $msg, 0);
-                $mqtt->close();
+                $mqtt->close(); // Fechar a conexão
 
                 // Log de sucesso
                 error_log("✅ MQTT Sala: Publicado em $canal - ID: " . json_decode($msg)->id);
 
-                // Log em arquivo para debug
+                // Log adicional em arquivo para debug
                 file_put_contents(Yii::getAlias('@backend') . '/mqtt_sala.log',
                     date('Y-m-d H:i:s') . " | $canal | " . substr($msg, 0, 100) . "\n",
                     FILE_APPEND
                 );
 
-                return true;
+                return true; // Sucesso
             }
 
+            // Se falhar a conexão
             error_log("❌ MQTT Sala: Falha na conexão para $canal");
             return false;
 
         } catch (\Exception $e) {
+            // Em caso de exceção
             error_log("❌ MQTT Sala Exception: " . $e->getMessage());
             return false;
         }
