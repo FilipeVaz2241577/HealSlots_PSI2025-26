@@ -10,12 +10,14 @@ use yii\web\Controller;
 use yii\web\Response;
 
 /**
- * Site controller
+ * Controlador do Site (Backend)
+ * Gere autenticação, dashboard e redirecionamentos baseados em roles
  */
 class SiteController extends Controller
 {
     /**
-     * {@inheritdoc}
+     * Configura comportamentos do controlador
+     * Controla acesso por roles e valida métodos HTTP
      */
     public function behaviors()
     {
@@ -30,7 +32,7 @@ class SiteController extends Controller
                     [
                         'actions' => ['logout', 'index'],
                         'allow' => true,
-                        'roles' => ['backOfficeAccess'], // Admin e AssistenteManutencao
+                        'roles' => ['backOfficeAccess'],
                     ],
                 ],
             ],
@@ -44,7 +46,8 @@ class SiteController extends Controller
     }
 
     /**
-     * {@inheritdoc}
+     * Configura ações personalizadas
+     * Define o manipulador de erros
      */
     public function actions()
     {
@@ -56,75 +59,79 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
-     *
-     * @return string
+     * Exibe a página inicial (dashboard)
+     * Redireciona para diferentes dashboards conforme o role do utilizador
+     * @return string Renderização da vista apropriada
      */
     public function actionIndex()
     {
-        // Redirecionar conforme o role
+        // Redireciona conforme o role do utilizador
         if (Yii::$app->user->can('manageUsers')) {
-            // Admin - Dashboard completo
+            // Administrador - Dashboard completo com todas as funcionalidades
             return $this->render('index.php');
         } elseif (Yii::$app->user->can('manageMaintenance')) {
-            // AssistenteManutencao - Dashboard de manutenção
+            // Assistente de Manutenção - Dashboard específico para manutenções
             return $this->render('manutencao-index');
         }
 
+        // Vista padrão para outros roles
         return $this->render('index');
     }
 
     /**
-     * Login action.
-     *
-     * @return string|Response
+     * Ação de login
+     * Gere autenticação de utilizadores e publica eventos MQTT
+     * @return string|Response Renderização do formulário ou redirecionamento
      */
     public function actionLogin()
     {
+        // Se o utilizador já está autenticado, redireciona para a página inicial
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
 
+        // Usa layout em branco para a página de login
         $this->layout = 'blank';
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post())) {
-            // DEBUG: Log da tentativa de login
-            Yii::info("Tentativa de login para usuário: {$model->username}", 'login');
+            // Log da tentativa de login
+            Yii::info("Tentativa de login para utilizador: {$model->username}", 'login');
 
             if ($model->login()) {
-                // DEBUG: Login bem-sucedido no modelo
-                Yii::info("LoginModel bem-sucedido para usuário: {$model->username}", 'login');
+                // Login bem-sucedido no modelo
+                Yii::info("LoginModel bem-sucedido para utilizador: {$model->username}", 'login');
 
-                // Verificar se o user tem acesso ao backend
+                // Verifica se o utilizador tem acesso ao backend
                 if (Yii::$app->user->can('backOfficeAccess')) {
-                    // DEBUG: Usuário tem acesso ao backend
-                    Yii::info("Usuário {$model->username} tem backOfficeAccess", 'login');
+                    // Utilizador tem acesso ao backend
+                    Yii::info("Utilizador {$model->username} tem backOfficeAccess", 'login');
 
-                    // LOGIN BEM-SUCEDIDO - Publicar no MQTT
+                    // Publica evento de login bem-sucedido no MQTT
                     Yii::info("Publicando evento de login bem-sucedido no MQTT", 'login');
                     $this->publishLoginEvent($model, true);
 
                     Yii::info("Redirecionando para home", 'login');
                     return $this->goBack();
                 } else {
-                    // DEBUG: Usuário NÃO tem acesso ao backend
-                    Yii::warning("Usuário {$model->username} NÃO tem backOfficeAccess", 'login');
+                    // Utilizador NÃO tem acesso ao backend
+                    Yii::warning("Utilizador {$model->username} NÃO tem backOfficeAccess", 'login');
 
-                    // Se não tiver acesso ao backend - PUBLICAR EVENTO DE FALHA
+                    // Publica evento de falha de login no MQTT
                     $this->publishLoginEvent($model, false, 'no_backend_access');
 
+                    // Remove autenticação e mostra mensagem de erro
                     Yii::$app->user->logout();
                     Yii::$app->session->setFlash('error', 'Não tem acesso ao backend.');
 
-                    Yii::warning("Usuário {$model->username} deslogado por falta de acesso ao backend", 'login');
+                    Yii::warning("Utilizador {$model->username} deslogado por falta de acesso ao backend", 'login');
                     return $this->refresh();
                 }
             } else {
-                // DEBUG: Login falhou no modelo
-                Yii::warning("LoginModel falhou para usuário: {$model->username}", 'login');
+                // Login falhou no modelo
+                Yii::warning("LoginModel falhou para utilizador: {$model->username}", 'login');
 
-                // LOGIN FALHADO - Publicar no MQTT
+                // Publica evento de login falhado no MQTT
                 Yii::info("Publicando evento de login falhado no MQTT", 'login');
                 $this->publishLoginEvent($model, false, 'invalid_credentials');
 
@@ -132,6 +139,7 @@ class SiteController extends Controller
             }
         }
 
+        // Limpa o campo de password para segurança
         $model->password = '';
 
         return $this->render('login', [
@@ -140,15 +148,16 @@ class SiteController extends Controller
     }
 
     /**
-     * Logout action.
-     *
-     * @return Response
+     * Ação de logout
+     * Remove autenticação e publica evento MQTT
+     * @return Response Redirecionamento para a página inicial
      */
     public function actionLogout()
     {
-        // Publicar evento de logout ANTES de deslogar
+        // Publica evento de logout ANTES de desautenticar
         $this->publishLogoutEvent();
 
+        // Remove autenticação do utilizador
         Yii::$app->user->logout();
 
         return $this->goHome();
@@ -160,6 +169,10 @@ class SiteController extends Controller
 
     /**
      * Publica evento de login no MQTT
+     * Regista sucesso/falha de autenticação para monitorização
+     * @param LoginForm $model Modelo do formulário de login
+     * @param bool $success Se o login foi bem-sucedido
+     * @param string|null $reason Razão da falha (se aplicável)
      */
     private function publishLoginEvent($model, $success, $reason = null)
     {
@@ -169,7 +182,7 @@ class SiteController extends Controller
             $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
 
             if (!file_exists($phpMQTTPath)) {
-                Yii::error("Arquivo MQTT não encontrado: $phpMQTTPath", 'mqtt');
+                Yii::error("Ficheiro MQTT não encontrado: $phpMQTTPath", 'mqtt');
                 return;
             }
 
@@ -179,12 +192,12 @@ class SiteController extends Controller
             $port = 1883;
             $client_id = "yii_login_" . uniqid();
 
-            Yii::info("Conectando ao MQTT - Server: $server, Port: $port, Client: $client_id", 'mqtt');
+            Yii::info("A ligar ao MQTT - Server: $server, Port: $port, Client: $client_id", 'mqtt');
 
             $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
 
             if ($mqtt->connect(true, null, null, null, 5)) {
-                Yii::info("Conexão MQTT bem-sucedida", 'mqtt');
+                Yii::info("Ligação MQTT bem-sucedida", 'mqtt');
 
                 $data = [
                     'username' => $model->username,
@@ -202,7 +215,7 @@ class SiteController extends Controller
                         $data['user_id'] = $user->id;
                         $data['email'] = $user->email;
 
-                        // Obter roles
+                        // Obtém roles do utilizador
                         $auth = Yii::$app->authManager;
                         $userRoles = $auth->getRolesByUser($user->id);
                         $rolesArray = [];
@@ -211,16 +224,16 @@ class SiteController extends Controller
                         }
                         $data['roles'] = $rolesArray;
 
-                        Yii::info("User encontrado: ID={$user->id}, Username={$user->username}, Roles: " . implode(', ', $rolesArray), 'mqtt');
+                        Yii::info("Utilizador encontrado: ID={$user->id}, Username={$user->username}, Roles: " . implode(', ', $rolesArray), 'mqtt');
                     } else {
                         Yii::error("getUser() retornou null para username: {$model->username}", 'mqtt');
                     }
 
                     $topic = "USER_LOGIN_BACKEND";
-                    Yii::info("Usando tópico para login bem-sucedido: $topic", 'mqtt');
+                    Yii::info("A usar tópico para login bem-sucedido: $topic", 'mqtt');
                 } else {
                     $topic = "LOGIN_FAILED_BACKEND";
-                    Yii::info("Usando tópico para login falhado: $topic, Razão: $reason", 'mqtt');
+                    Yii::info("A usar tópico para login falhado: $topic, Razão: $reason", 'mqtt');
                 }
 
                 $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
@@ -236,18 +249,18 @@ class SiteController extends Controller
 
                 $mqtt->close();
 
-                // Escrever no arquivo de log
+                // Escreve no ficheiro de log
                 $logPath = Yii::getAlias('@backend') . '/mqtt_auth.log';
                 $logEntry = date('Y-m-d H:i:s') . " | $topic | " . $jsonData . "\n";
 
                 if (file_put_contents($logPath, $logEntry, FILE_APPEND)) {
-                    Yii::info("Log escrito no arquivo: $logPath", 'mqtt');
+                    Yii::info("Log escrito no ficheiro: $logPath", 'mqtt');
                 } else {
-                    Yii::error("Falha ao escrever no arquivo de log: $logPath", 'mqtt');
+                    Yii::error("Falha ao escrever no ficheiro de log: $logPath", 'mqtt');
                 }
 
             } else {
-                Yii::error("Falha na conexão MQTT com o servidor", 'mqtt');
+                Yii::error("Falha na ligação MQTT com o servidor", 'mqtt');
             }
 
         } catch (\Exception $e) {
@@ -257,22 +270,23 @@ class SiteController extends Controller
 
     /**
      * Publica evento de logout no MQTT
+     * Regista ação de logout para auditoria e monitorização
      */
     private function publishLogoutEvent()
     {
         try {
             $user = Yii::$app->user->identity;
             if (!$user) {
-                Yii::warning("Tentativa de publicar logout sem usuário autenticado", 'mqtt');
+                Yii::warning("Tentativa de publicar logout sem utilizador autenticado", 'mqtt');
                 return;
             }
 
-            Yii::info("Iniciando publishLogoutEvent para usuário: {$user->username}", 'mqtt');
+            Yii::info("Iniciando publishLogoutEvent para utilizador: {$user->username}", 'mqtt');
 
             $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
 
             if (!file_exists($phpMQTTPath)) {
-                Yii::error("Arquivo MQTT não encontrado: $phpMQTTPath", 'mqtt');
+                Yii::error("Ficheiro MQTT não encontrado: $phpMQTTPath", 'mqtt');
                 return;
             }
 
@@ -282,12 +296,12 @@ class SiteController extends Controller
             $port = 1883;
             $client_id = "yii_logout_" . uniqid();
 
-            Yii::info("Conectando ao MQTT para logout - Server: $server, Port: $port, Client: $client_id", 'mqtt');
+            Yii::info("A ligar ao MQTT para logout - Server: $server, Port: $port, Client: $client_id", 'mqtt');
 
             $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
 
             if ($mqtt->connect(true, null, null, null, 5)) {
-                Yii::info("Conexão MQTT para logout bem-sucedida", 'mqtt');
+                Yii::info("Ligação MQTT para logout bem-sucedida", 'mqtt');
 
                 $data = [
                     'user_id' => $user->id,
@@ -298,7 +312,7 @@ class SiteController extends Controller
                     'location' => 'backend'
                 ];
 
-                // Obter roles
+                // Obtém roles do utilizador
                 $auth = Yii::$app->authManager;
                 $userRoles = $auth->getRolesByUser($user->id);
                 $rolesArray = [];
@@ -307,7 +321,7 @@ class SiteController extends Controller
                 }
                 $data['roles'] = $rolesArray;
 
-                Yii::info("Roles do usuário para logout: " . implode(', ', $rolesArray), 'mqtt');
+                Yii::info("Roles do utilizador para logout: " . implode(', ', $rolesArray), 'mqtt');
 
                 $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
                 Yii::info("JSON a ser publicado para logout: " . $jsonData, 'mqtt');
@@ -322,18 +336,18 @@ class SiteController extends Controller
 
                 $mqtt->close();
 
-                // Escrever no arquivo de log
+                // Escreve no ficheiro de log
                 $logPath = Yii::getAlias('@backend') . '/mqtt_auth.log';
                 $logEntry = date('Y-m-d H:i:s') . " | USER_LOGOUT_BACKEND | " . $jsonData . "\n";
 
                 if (file_put_contents($logPath, $logEntry, FILE_APPEND)) {
-                    Yii::info("Log de logout escrito no arquivo: $logPath", 'mqtt');
+                    Yii::info("Log de logout escrito no ficheiro: $logPath", 'mqtt');
                 } else {
-                    Yii::error("Falha ao escrever log de logout no arquivo: $logPath", 'mqtt');
+                    Yii::error("Falha ao escrever log de logout no ficheiro: $logPath", 'mqtt');
                 }
 
             } else {
-                Yii::error("Falha na conexão MQTT para logout", 'mqtt');
+                Yii::error("Falha na ligação MQTT para logout", 'mqtt');
             }
 
         } catch (\Exception $e) {

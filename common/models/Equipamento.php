@@ -9,73 +9,87 @@ use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 
 /**
- * This is the model class for table "equipamento".
+ * Esta é a classe de modelo para a tabela "equipamento".
  *
- * @property int $id
- * @property string $numeroSerie
- * @property int $tipoEquipamento_id
- * @property string $equipamento
- * @property string $estado
+ * @property int $id - Identificador único do equipamento
+ * @property string $numeroSerie - Número de série do equipamento
+ * @property int $tipoEquipamento_id - ID do tipo de equipamento (chave estrangeira)
+ * @property string $equipamento - Nome do equipamento
+ * @property string $estado - Estado atual do equipamento
  *
- * @property TipoEquipamento $tipoEquipamento
- * @property SalaEquipamento[] $salaEquipamentos
- * @property Sala[] $salas
+ * @property TipoEquipamento $tipoEquipamento - Relação com o tipo de equipamento
+ * @property SalaEquipamento[] $salaEquipamentos - Relação com os registos de associação a salas
+ * @property Sala[] $salas - Salas onde este equipamento está alocado (via relação)
  */
 class Equipamento extends ActiveRecord
 {
+    // Constantes para os estados possíveis do equipamento
     const ESTADO_OPERACIONAL = 'Operacional';
     const ESTADO_MANUTENCAO = 'Em Manutenção';
     const ESTADO_EM_USO = 'Em Uso';
 
     /**
      * {@inheritdoc}
+     * Retorna o nome da tabela associada a este modelo
      */
     public static function tableName()
     {
-        return '{{%equipamento}}';
+        return '{{%equipamento}}'; // Nome da tabela na base de dados (com prefixo se aplicável)
     }
 
     /**
      * {@inheritdoc}
+     * Define os comportamentos do modelo
      */
     public function behaviors()
     {
         return [
+            // Pode adicionar comportamentos como TimestampBehavior ou BlameableBehavior aqui
         ];
     }
 
     /**
      * {@inheritdoc}
+     * Define as regras de validação para os atributos do modelo
      */
     public function rules()
     {
         return [
+            // Todos estes campos são obrigatórios
             [['numeroSerie', 'tipoEquipamento_id', 'equipamento', 'estado'], 'required'],
+            // tipoEquipamento_id deve ser um inteiro
             [['tipoEquipamento_id'], 'integer'],
+            // numeroSerie e equipamento são strings com máximo de 100 caracteres
             [['numeroSerie', 'equipamento'], 'string', 'max' => 100],
+            // estado é uma string com máximo de 20 caracteres
             [['estado'], 'string', 'max' => 20],
+            // Valor padrão para estado é 'Operacional'
             [['estado'], 'default', 'value' => self::ESTADO_OPERACIONAL],
+            // numeroSerie deve ser único na base de dados
             [['numeroSerie'], 'unique'],
+            // Validação de existência do tipo de equipamento (chave estrangeira)
             [['tipoEquipamento_id'], 'exist', 'skipOnError' => true, 'targetClass' => TipoEquipamento::class, 'targetAttribute' => ['tipoEquipamento_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
+     * Define os rótulos para os atributos (usados em formulários)
      */
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'numeroSerie' => 'Número de Série',
-            'tipoEquipamento_id' => 'Tipo de Equipamento',
-            'equipamento' => 'Nome do Equipamento',
-            'estado' => 'Estado',
+            'id' => 'ID', // Rótulo para o ID
+            'numeroSerie' => 'Número de Série', // Rótulo para o número de série
+            'tipoEquipamento_id' => 'Tipo de Equipamento', // Rótulo para o tipo de equipamento
+            'equipamento' => 'Nome do Equipamento', // Rótulo para o nome do equipamento
+            'estado' => 'Estado', // Rótulo para o estado
         ];
     }
 
     /**
-     * Gets query for [[TipoEquipamento]].
+     * Obtém a relação com o tipo de equipamento
+     * @return \yii\db\ActiveQuery - Query para obter o tipo de equipamento
      */
     public function getTipoEquipamento()
     {
@@ -83,7 +97,8 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Gets query for [[SalaEquipamentos]].
+     * Obtém a relação com os registos de associação a salas
+     * @return \yii\db\ActiveQuery - Query para obter as associações com salas
      */
     public function getSalaEquipamentos()
     {
@@ -91,17 +106,18 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Gets query for [[Salas]] through sala_equipamento.
+     * Obtém a relação com as salas através da tabela de associação sala_equipamento
+     * @return \yii\db\ActiveQuery - Query para obter as salas associadas
      */
     public function getSalas()
     {
         return $this->hasMany(Sala::class, ['id' => 'idSala'])
-            ->via('salaEquipamentos');
+            ->via('salaEquipamentos'); // Usa a relação salaEquipamentos como ponte
     }
 
-
     /**
-     * Get estado options
+     * Obtém as opções para o campo estado
+     * @return string[] - Array com os pares chave-valor dos estados
      */
     public static function optsEstado()
     {
@@ -113,33 +129,38 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Get badge color for estado
+     * Obtém um badge colorido para o estado do equipamento
+     * @return string - HTML do badge com a cor apropriada
      */
     public function getEstadoBadge()
     {
+        // Mapeamento de cores para cada estado
         $colors = [
-            self::ESTADO_OPERACIONAL => 'success',
-            self::ESTADO_MANUTENCAO => 'warning',
-            self::ESTADO_EM_USO => 'primary',
+            self::ESTADO_OPERACIONAL => 'success', // Verde para operacional
+            self::ESTADO_MANUTENCAO => 'warning', // Amarelo para manutenção
+            self::ESTADO_EM_USO => 'primary', // Azul para em uso
         ];
 
+        // Retorna o badge HTML com a classe de cor apropriada
         return '<span class="badge bg-' . ($colors[$this->estado] ?? 'secondary') . '">' . $this->estado . '</span>';
     }
 
     /**
-     * Get count by estado for statistics
+     * Obtém a contagem de equipamentos por estado para estatísticas
+     * @return array - Array com a contagem de equipamentos por estado
      */
     public static function getCountByEstado()
     {
         return self::find()
             ->select(['estado', 'COUNT(*) as count'])
             ->groupBy(['estado'])
-            ->indexBy('estado')
-            ->column();
+            ->indexBy('estado') // Usa o estado como índice do array
+            ->column(); // Retorna apenas a coluna de contagens
     }
 
     /**
-     * Get equipamentos em manutenção sem registo de manutenção ativa
+     * Obtém equipamentos em manutenção sem registo de manutenção ativa
+     * @return array - Array de equipamentos em manutenção sem registo ativo
      */
     public static function getEquipamentosManutencaoSemRegisto()
     {
@@ -149,14 +170,15 @@ class Equipamento extends ActiveRecord
                 (new \yii\db\Query())
                     ->select(['equipamento_id'])
                     ->from('manutencao')
-                    ->where(['status' => ['Pendente', 'Em Curso']])
-                    ->andWhere(['IS NOT', 'equipamento_id', null])
+                    ->where(['status' => ['Pendente', 'Em Curso']]) // Estados de manutenção ativos
+                    ->andWhere(['IS NOT', 'equipamento_id', null]) // Apenas registos com equipamento associado
             ])
-            ->all();
+            ->all(); // Retorna todos os resultados
     }
 
     /**
-     * Get count de equipamentos em manutenção sem registo
+     * Obtém a contagem de equipamentos em manutenção sem registo ativo
+     * @return int - Número de equipamentos em manutenção sem registo
      */
     public static function getCountEquipamentosManutencaoSemRegisto()
     {
@@ -169,27 +191,29 @@ class Equipamento extends ActiveRecord
                     ->where(['status' => ['Pendente', 'Em Curso']])
                     ->andWhere(['IS NOT', 'equipamento_id', null])
             ])
-            ->count();
+            ->count(); // Retorna apenas a contagem
     }
 
     /**
-     * Get current sala for this equipamento
+     * Obtém a sala atual onde este equipamento se encontra
+     * @return Sala|null - A sala atual ou null se não estiver associado a nenhuma sala
      */
     public function getCurrentSala()
     {
         $salaEquipamento = SalaEquipamento::find()
             ->where(['idEquipamento' => $this->id])
-            ->one();
+            ->one(); // Obtém o primeiro registo (se existir)
 
         if ($salaEquipamento) {
-            return $salaEquipamento->sala;
+            return $salaEquipamento->sala; // Retorna a sala associada
         }
 
-        return null;
+        return null; // Retorna null se não houver associação
     }
 
     /**
-     * Check if equipamento is in maintenance
+     * Verifica se o equipamento está em manutenção
+     * @return bool - True se o estado for 'Em Manutenção'
      */
     public function isInMaintenance()
     {
@@ -197,7 +221,8 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Check if equipamento is operational
+     * Verifica se o equipamento está operacional
+     * @return bool - True se o estado for 'Operacional'
      */
     public function isOperational()
     {
@@ -205,7 +230,8 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Check if equipamento is in use
+     * Verifica se o equipamento está em uso
+     * @return bool - True se o estado for 'Em Uso'
      */
     public function isInUse()
     {
@@ -213,37 +239,47 @@ class Equipamento extends ActiveRecord
     }
 
     /**
-     * Check if equipamento has a sala assigned
+     * Verifica se o equipamento está associado a alguma sala
+     * @return bool - True se existir alguma associação com sala
      */
     public function hasSala()
     {
         return SalaEquipamento::find()
             ->where(['idEquipamento' => $this->id])
-            ->exists();
+            ->exists(); // Retorna true se existir pelo menos um registo
     }
 
     /**
-     * Get salas count for this equipamento
+     * Obtém o número de salas associadas a este equipamento
+     * @return int - Contagem de salas associadas
      */
     public function getSalasCount()
     {
         return SalaEquipamento::find()
             ->where(['idEquipamento' => $this->id])
-            ->count();
+            ->count(); // Retorna o número de associações
     }
 
+    // ==============================================
+    // MÉTODOS PARA COMUNICAÇÃO MQTT
+    // ==============================================
+
+    /**
+     * {@inheritdoc}
+     * Executa após salvar o registo (tanto inserção como atualização)
+     */
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
 
-        // Obter dados do registo
-        $id = $this->id;
-        $numeroSerie = $this->numeroSerie;
-        $equipamento = $this->equipamento;
-        $estado = $this->estado;
-        $tipoEquipamento_id = $this->tipoEquipamento_id;
+        // Obter dados do registo para enviar via MQTT
+        $id = $this->id; // ID do equipamento
+        $numeroSerie = $this->numeroSerie; // Número de série
+        $equipamento = $this->equipamento; // Nome do equipamento
+        $estado = $this->estado; // Estado atual
+        $tipoEquipamento_id = $this->tipoEquipamento_id; // ID do tipo de equipamento
 
-        // Criar objeto JSON
+        // Criar objeto JSON com os dados do equipamento
         $myObj = new \stdClass();
         $myObj->id = $id;
         $myObj->numeroSerie = $numeroSerie;
@@ -251,30 +287,34 @@ class Equipamento extends ActiveRecord
         $myObj->estado = $estado;
         $myObj->tipoEquipamento_id = $tipoEquipamento_id;
 
-        $myJSON = json_encode($myObj);
+        $myJSON = json_encode($myObj); // Converter objeto para JSON
 
-        // Log para debug
+        // Log para debug no sistema
         Yii::info("afterSave: " . ($insert ? 'INSERT' : 'UPDATE') . " - ID: $id", 'equipamento');
         error_log("📝 Equipamento " . ($insert ? 'criado' : 'atualizado') . " - ID: $id");
 
-        // Determinar canal
+        // Determinar o canal MQTT baseado no tipo de operação
         $canal = $insert ? "INSERT_EQUIPAMENTO" : "UPDATE_EQUIPAMENTO";
 
-        // 1. Primeiro salva a notificação no arquivo JSON
+        // 1. Primeiro salva a notificação no arquivo JSON (para histórico)
         $this->saveNotificationToFile($canal, $myJSON);
 
-        // 2. Depois publica no MQTT
+        // 2. Depois publica no MQTT (para comunicação em tempo real)
         $this->FazPublishNoMosquitto($canal, $myJSON);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     * Executa após eliminar o registo
      */
     public function afterDelete()
     {
         parent::afterDelete();
 
+        // Obter o ID do equipamento eliminado
         $prod_id = $this->id;
+
+        // Criar objeto JSON apenas com o ID
         $myObj = new \stdClass();
         $myObj->id = $prod_id;
         $myJSON = json_encode($myObj);
@@ -290,10 +330,16 @@ class Equipamento extends ActiveRecord
         $this->FazPublishNoMosquitto("DELETE_EQUIPAMENTO", $myJSON);
     }
 
-// ADICIONE ESTE MÉTODO NO MESMO ARQUIVO (Equipamento.php)
+    /**
+     * Salva uma notificação no arquivo JSON para histórico
+     * @param string $channel - Canal/tópico da notificação
+     * @param string $message - Mensagem em formato JSON
+     * @return bool - True se a operação for bem-sucedida
+     */
     private function saveNotificationToFile($channel, $message)
     {
         try {
+            // Caminho para o arquivo de notificações
             $logFile = Yii::getAlias('@backend/runtime/mqtt_notifications.json');
 
             // Criar pasta runtime se não existir
@@ -309,16 +355,16 @@ class Equipamento extends ActiveRecord
                 $notifications = json_decode($content, true) ?: [];
             }
 
-            // Criar ID único
+            // Criar ID único para a notificação
             $notificationId = 'mqtt_' . time() . '_' . uniqid();
 
-            // Determinar tipo de ação
+            // Determinar tipo de ação baseado no canal
             $action = 'info';
             if (strpos($channel, 'INSERT') !== false) $action = 'insert';
             if (strpos($channel, 'UPDATE') !== false) $action = 'update';
             if (strpos($channel, 'DELETE') !== false) $action = 'delete';
 
-            // Extrair dados da mensagem
+            // Extrair dados da mensagem para criar um título descritivo
             $title = 'Evento do Sistema';
             $data = json_decode($message, true);
             $equipamentoId = '';
@@ -338,7 +384,7 @@ class Equipamento extends ActiveRecord
                 }
             }
 
-            // Usuário atual
+            // Obter o utilizador atual (se estiver autenticado)
             $user = 'Sistema';
             if (Yii::$app->has('user') && !Yii::$app->user->isGuest) {
                 $user = Yii::$app->user->identity->username;
@@ -351,14 +397,14 @@ class Equipamento extends ActiveRecord
                 'message' => $message,
                 'title' => $title,
                 'action' => $action,
-                'time' => date('H:i:s'),
-                'date' => date('d/m/Y'),
+                'time' => date('H:i:s'), // Hora atual
+                'date' => date('d/m/Y'), // Data atual
                 'user' => $user,
-                'read' => false,
-                'timestamp' => time()
+                'read' => false, // Notificação não lida por padrão
+                'timestamp' => time() // Timestamp UNIX
             ];
 
-            // Limitar a 50 notificações (mantém as mais recentes)
+            // Limitar a 50 notificações (mantém apenas as mais recentes)
             if (count($notifications) > 50) {
                 // Ordenar por timestamp (mais antigas primeiro)
                 uasort($notifications, function($a, $b) {
@@ -368,7 +414,7 @@ class Equipamento extends ActiveRecord
                 $notifications = array_slice($notifications, -50, 50, true);
             }
 
-            // Salvar no arquivo
+            // Salvar no arquivo JSON
             $result = file_put_contents($logFile, json_encode($notifications, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             if ($result === false) {
@@ -388,53 +434,61 @@ class Equipamento extends ActiveRecord
         }
     }
 
-// Atualize também o método FazPublishNoMosquitto para chamar saveNotificationToFile:
+    /**
+     * Publica uma mensagem no servidor Mosquitto MQTT
+     * @param string $canal - Nome do tópico/canal MQTT
+     * @param string $msg - Mensagem a publicar (em formato JSON)
+     * @return bool - True se a publicação for bem-sucedida
+     */
     public function FazPublishNoMosquitto($canal, $msg)
     {
         try {
-            // Caminho ABSOLUTO para o phpMQTT
+            // Caminho ABSOLUTO para o ficheiro phpMQTT.php
             $phpMQTTPath = Yii::getAlias('@backend') . '/mosquitto/phpMQTT.php';
 
+            // Verificar se o ficheiro existe
             if (!file_exists($phpMQTTPath)) {
                 error_log("MQTT ERRO: Arquivo não encontrado: $phpMQTTPath");
                 return false;
             }
 
+            // Incluir a biblioteca MQTT
             require_once $phpMQTTPath;
 
-            $server = "127.0.0.1";
-            $port = 1883;
-            $client_id = "yii_equipamento_" . uniqid();
+            // Configurações do servidor MQTT
+            $server = "127.0.0.1"; // Endereço do servidor Mosquitto (localhost)
+            $port = 1883; // Porta padrão do MQTT
+            $client_id = "yii_equipamento_" . uniqid(); // ID único do cliente
 
+            // Criar instância do cliente MQTT
             $mqtt = new \backend\mosquitto\phpMQTT($server, $port, $client_id);
 
-            // Conectar (timeout de 5 segundos)
+            // Tentar conectar ao servidor MQTT (timeout de 5 segundos)
             if ($mqtt->connect(true, null, null, null, 5)) {
-                // Publicar
+                // Publicar a mensagem no tópico especificado (QoS 0 = sem confirmação)
                 $mqtt->publish($canal, $msg, 0);
-                $mqtt->close();
+                $mqtt->close(); // Fechar a conexão
 
                 // Log de sucesso
                 $data = json_decode($msg, true);
                 $id = $data['id'] ?? 'N/A';
                 error_log("✅ MQTT: Publicado em $canal - ID: $id");
 
-                // Log em arquivo para debug
+                // Log adicional em arquivo para debug
                 file_put_contents(Yii::getAlias('@backend') . '/mqtt_debug.log',
                     date('Y-m-d H:i:s') . " | $canal | ID: $id | " . substr($msg, 0, 100) . "\n",
                     FILE_APPEND
                 );
 
-                // A NOTIFICAÇÃO JÁ FOI SALVA PELOS MÉTODOS afterSave/afterDelete
-                // Então não precisamos chamar saveNotificationToFile aqui novamente
-
                 return true;
             }
 
+            // Se falhar a conexão
             error_log("❌ MQTT: Falha na conexão para $canal");
             return false;
 
         } catch (\Exception $e) {
+            // Em caso de exceção
             error_log("❌ MQTT Exception: " . $e->getMessage());
             return false;
         }

@@ -73,30 +73,30 @@ class RbacController extends Controller
         // ========== ATRIBUIR PERMISSÕES CONFORME TABELA ==========
 
         // ADMIN - Acesso total a Back-Office e Front-Office
-        $auth->addChild($admin, $backOfficeAccess);
-        $auth->addChild($admin, $frontOfficeAccess);
-        $auth->addChild($admin, $manageUsers);
-        $auth->addChild($admin, $manageSystemParams);
-        $auth->addChild($admin, $viewReports);
-        $auth->addChild($admin, $manageMaintenance);
-        $auth->addChild($admin, $updateEquipmentStatus);
-        $auth->addChild($admin, $manageBookings);
-        $auth->addChild($admin, $viewResources);
-        $auth->addChild($admin, $manageRooms);
-        $auth->addChild($admin, $reportIssues);
+        $auth->addChild($admin, $backOfficeAccess); // Permissão de acesso ao Back-Office
+        $auth->addChild($admin, $frontOfficeAccess); // Permissão de acesso ao Front-Office
+        $auth->addChild($admin, $manageUsers); // Permissão para gerir utilizadores
+        $auth->addChild($admin, $manageSystemParams); // Permissão para gerir parâmetros do sistema
+        $auth->addChild($admin, $viewReports); // Permissão para visualizar relatórios
+        $auth->addChild($admin, $manageMaintenance); // Permissão para gerir manutenções
+        $auth->addChild($admin, $updateEquipmentStatus); // Permissão para atualizar estado de equipamentos
+        $auth->addChild($admin, $manageBookings); // Permissão para gerir reservas
+        $auth->addChild($admin, $viewResources); // Permissão para visualizar recursos
+        $auth->addChild($admin, $manageRooms); // Permissão para gerir salas
+        $auth->addChild($admin, $reportIssues); // Permissão para reportar problemas
 
-        // TÉCNICO DE SAÚDE - Apenas Front-Office
-        $auth->addChild($tecnicoSaude, $frontOfficeAccess);
-        $auth->addChild($tecnicoSaude, $manageBookings);
-        $auth->addChild($tecnicoSaude, $viewResources);
-        $auth->addChild($tecnicoSaude, $manageRooms);
-        $auth->addChild($tecnicoSaude, $reportIssues);
+// TÉCNICO DE SAÚDE - Apenas Front-Office
+        $auth->addChild($tecnicoSaude, $frontOfficeAccess); // Permissão de acesso ao Front-Office
+        $auth->addChild($tecnicoSaude, $manageBookings); // Permissão para gerir reservas
+        $auth->addChild($tecnicoSaude, $viewResources); // Permissão para visualizar recursos
+        $auth->addChild($tecnicoSaude, $manageRooms); // Permissão para gerir salas
+        $auth->addChild($tecnicoSaude, $reportIssues); // Permissão para reportar problemas
 
-        // ASSISTENTE DE MANUTENÇÃO - Apenas Back-Office
-        $auth->addChild($assistenteManutencao, $backOfficeAccess);
-        $auth->addChild($assistenteManutencao, $manageMaintenance);
-        $auth->addChild($assistenteManutencao, $updateEquipmentStatus);
-        $auth->addChild($assistenteManutencao, $reportIssues);
+// ASSISTENTE DE MANUTENÇÃO - Apenas Back-Office
+        $auth->addChild($assistenteManutencao, $backOfficeAccess); // Permissão de acesso ao Back-Office
+        $auth->addChild($assistenteManutencao, $manageMaintenance); // Permissão para gerir manutenções
+        $auth->addChild($assistenteManutencao, $updateEquipmentStatus); // Permissão para atualizar estado de equipamentos
+        $auth->addChild($assistenteManutencao, $reportIssues); // Permissão para reportar problemas
         $auth->addChild($assistenteManutencao, $viewResources); // Para consultar recursos
 
         echo "RBAC inicializado com sucesso!\n";
