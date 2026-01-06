@@ -64,21 +64,26 @@ return [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'api/salas' => 'api/salas',
-                    ],
+                    'controller' => ['api/sala' => 'api/sala'],
+                    'pluralize' => false,
                     'extraPatterns' => [
                         'GET search' => 'search',
+                        'GET disponiveis' => 'disponiveis',
+                        'GET {id}/detalhes' => 'detalhes',
                     ],
+                    'tokens' => ['{id}' => '<id:\\d+>'],
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'api/equipamentos' => 'api/equipamentos',
-                    ],
+                    'controller' => ['api/equipamento' => 'api/equipamento'],
+                    'pluralize' => false,
                     'extraPatterns' => [
                         'GET search' => 'search',
+                        'GET disponiveis' => 'disponiveis',
+                        'POST criar' => 'criar',
+                        'GET verificar-serie' => 'verificar-serie',
                     ],
+                    'tokens' => ['{id}' => '<id:\\d+>'],
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
@@ -91,12 +96,14 @@ return [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'api/blocos' => 'api/blocos',
-                    ],
+                    'controller' => ['api/bloco' => 'api/bloco'],
+                    'pluralize' => false,
                     'extraPatterns' => [
                         'GET search' => 'search',
+                        'GET {id}/salas' => 'salas',
+                        'GET {id}/estatisticas' => 'estatisticas',
                     ],
+                    'tokens' => ['{id}' => '<id:\\d+>'],
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
@@ -109,13 +116,23 @@ return [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'api/requisicoes' => 'api/requisicoes',
-                    ],
+                    'controller' => ['api/requisicao' => 'api/requisicao'],
+                    'pluralize' => false,
                     'extraPatterns' => [
                         'GET search' => 'search',
+                        'POST criar' => 'criar',
+                        'GET minhas' => 'minhas',
+                        'POST {id}/concluir' => 'concluir',
+                        'POST {id}/cancelar' => 'cancelar',
+                        'GET verificar-disponibilidade' => 'verificar-disponibilidade',
                     ],
+                    'tokens' => ['{id}' => '<id:\\d+>'],
                 ],
+                // URLs compatíveis com plural
+                'api/salas' => 'api/sala/index',
+                'api/blocos' => 'api/bloco/index',
+                'api/requisicoes' => 'api/requisicao/index',
+                'api/equipamentos' => 'api/equipamento/index',
             ],
         ],
     ],
