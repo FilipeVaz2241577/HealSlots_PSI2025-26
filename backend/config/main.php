@@ -56,11 +56,15 @@ return [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                        'api/users' => 'api/users',
+                        'api/user' => 'api/user', // ⚠️ SINGULAR: 'user' não 'users'
                     ],
+                    'pluralize' => false, // ⚠️ IMPORTANTE: não pluralizar
                     'extraPatterns' => [
                         'GET search' => 'search',
                     ],
+                    'tokens' => [
+                        '{id}' => '<id:\\d+>', // ⚠️ PERMITE /api/user/1
+                    ]
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
