@@ -28,6 +28,9 @@ return [
         ],
         'request' => [
             'csrfParam' => '_csrf-backend',
+            'parsers' => [ //faltava isto
+                'application/json' => 'yii\web\JsonParser',
+            ],
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -82,6 +85,8 @@ return [
                     'controller' => ['api/equipamento' => 'api/equipamento'],
                     'pluralize' => false,
                     'extraPatterns' => [
+
+
                         'GET search' => 'search',
                         'GET disponiveis' => 'disponiveis',
                         'POST criar' => 'criar',
