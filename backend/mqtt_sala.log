@@ -61,3 +61,13 @@
 2026-01-05 21:45:09 | UPDATE_SALA | {"id":3,"nome":"Sala 1a","estado":"Livre","bloco_id":1,"timestamp":"2026-01-05 21:45:09","bloco_nome
 2026-01-05 21:45:09 | ESTADO_CHANGED_SALA | {"id":3,"nome":"Sala 1a","old_estado":"Manutencao","new_estado":"Livre","bloco_id":1,"timestamp":"20
 2026-01-06 17:10:09 | DELETE_SALA | {"id":3,"nome":"Sala 1a","bloco_id":1,"timestamp":"2026-01-06 17:10:09","bloco_nome":"Bloco A"}
+2026-01-12 20:16:09 | UPDATE_SALA | {"id":1,"nome":"Sala 1A","estado":"Livre","bloco_id":1,"timestamp":"2026-01-12 20:16:08","bloco_nome
+2026-01-12 20:18:55 | UPDATE_SALA | {"id":1,"nome":"Sala 1A","estado":"EmUso","bloco_id":1,"timestamp":"2026-01-12 20:18:55","bloco_nome
+2026-01-12 20:18:55 | ESTADO_CHANGED_SALA | {"id":1,"nome":"Sala 1A","old_estado":"Livre","new_estado":"EmUso","bloco_id":1,"timestamp":"2026-01
+2026-01-12 21:39:09 | UPDATE_SALA | {"id":1,"nome":"Sala 1A","estado":"Manutencao","bloco_id":1,"timestamp":"2026-01-12 21:39:09","bloco
+2026-01-12 21:39:09 | ESTADO_CHANGED_SALA | {"id":1,"nome":"Sala 1A","old_estado":"EmUso","new_estado":"Manutencao","bloco_id":1,"timestamp":"20
+2026-01-17 14:08:22 | UPDATE_SALA | {"id":1,"nome":"Sala 1A","estado":"Livre","bloco_id":1,"timestamp":"2026-01-17 14:08:22","bloco_nome
+2026-01-17 14:08:22 | ESTADO_CHANGED_SALA | {"id":1,"nome":"Sala 1A","old_estado":"Manutencao","new_estado":"Livre","bloco_id":1,"timestamp":"20
+2026-01-17 14:08:32 | UPDATE_SALA | {"id":1,"nome":"Sala 1A","estado":"EmUso","bloco_id":1,"timestamp":"2026-01-17 14:08:32","bloco_nome
+2026-01-17 14:08:32 | ESTADO_CHANGED_SALA | {"id":1,"nome":"Sala 1A","old_estado":"","new_estado":"EmUso","bloco_id":1,"timestamp":"2026-01-17 1
+2026-01-17 14:31:39 | INSERT_SALA | {"id":4,"nome":"Sala teste","estado":"Livre","bloco_id":"4","timestamp":"2026-01-17 14:31:39","bloco

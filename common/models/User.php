@@ -108,6 +108,9 @@ class User extends ActiveRecord implements IdentityInterface
         $scenarios[self::SCENARIO_CREATE] = ['username', 'email', 'password', 'password_repeat', 'status', 'role'];
         // Campos permitidos no cenário de atualização
         $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'password', 'password_repeat', 'status', 'role'];
+        $scenarios = parent::scenarios();
+        $scenarios['updateProfile'] = ['nome_completo', 'email'];
+
         return $scenarios;
     }
 
@@ -617,4 +620,6 @@ class User extends ActiveRecord implements IdentityInterface
             return false;
         }
     }
+
+
 }

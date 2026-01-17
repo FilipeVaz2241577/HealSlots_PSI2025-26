@@ -13,3 +13,9 @@
 2026-01-05 23:01:52 | INSERT_USER | {"id":10,"username":"123","email":"123@gmail.com","status":"10","status_text":"Ativo","created_at":"
 2026-01-05 23:02:17 | INSERT_USER | {"id":11,"username":"1234","email":"1234@gmail.com","status":"10","status_text":"Ativo","created_at"
 2026-01-05 23:02:44 | INSERT_USER | {"id":12,"username":"12345","email":"12345@gmail.com","status":"10","status_text":"Ativo","created_a
+2026-01-17 16:03:52 | UPDATE_USER | {"id":3,"username":"teste2","email":"teste2@gmail.com","status":10,"status_text":"Ativo","created_at
+2026-01-17 16:04:17 | UPDATE_USER | {"id":3,"username":"teste2","email":"teste2@gmail.com","status":10,"status_text":"Ativo","created_at
+2026-01-17 16:04:45 | UPDATE_USER | {"id":3,"username":"teste2","email":"teste2@gmail.com","status":10,"status_text":"Ativo","created_at
+2026-01-17 16:08:00 | UPDATE_USER | {"id":3,"username":"teste22","email":"teste2@gmail.com","status":10,"status_text":"Ativo","created_a
+2026-01-17 16:08:20 | UPDATE_USER | {"id":3,"username":"teste22","email":"teste22@gmail.com","status":10,"status_text":"Ativo","created_
+2026-01-17 16:08:20 | EMAIL_CHANGED_USER | {"id":3,"username":"teste22","old_email":"teste2@gmail.com","new_email":"teste22@gmail.com","timesta

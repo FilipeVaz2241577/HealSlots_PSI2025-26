@@ -59,14 +59,16 @@ return [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                        'api/user' => 'api/user', // ⚠️ SINGULAR: 'user' não 'users'
+                        'api/user' => 'api/user',
                     ],
-                    'pluralize' => false, // ⚠️ IMPORTANTE: não pluralizar
+                    'pluralize' => false,
                     'extraPatterns' => [
                         'GET search' => 'search',
+                        'PUT {id}/profile' => 'update-profile',  // ← ADICIONE ESTA LINHA
+                        'PATCH {id}/profile' => 'update-profile', // ← E ESTA LINHA
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>', // ⚠️ PERMITE /api/user/1
+                        '{id}' => '<id:\\d+>',
                     ]
                 ],
                 [
